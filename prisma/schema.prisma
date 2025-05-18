@@ -1,0 +1,852 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SYSTEM_ADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id        String  @id @default(uuid())
+  username  String
+  email     String  @unique
+  password  String
+  firstName String?
+  lastName  String?
+  role      Role
+  isActive  Boolean @default(true)
+
+  permissions_json Json?
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  Student           Student?
+  Attendance        Attendance[]
+  AttendanceReport  AttendanceReport[]
+  Transactions      Transactions[]
+  Employee          Employee[]
+  Notices           Notices[]
+  Messages          Messages[]
+  MessageRecipients MessageRecipients[]
+  BookMovements     BookMovements[]
+  ActivityLogs      ActivityLogs[]
+  ApprovedPayslips  EmployeePlayslips[] @relation("ApprovedPayslips")
+  RejectedPayslips  EmployeePlayslips[] @relation("RejectedPayslips")
+  EmployeePlayslips EmployeePlayslips[]
+}
+
+model Student {
+  id            String   @id @default(uuid())
+  admissionNo   String   @unique
+  admissionDate DateTime
+  dateOfBirth   DateTime
+  Gender        String
+  BloodGroup    String?
+  address       String?
+  nationality   String?
+  phoneNumber   String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  // batchId String
+  // batch   Batch  @relation(fields: [batchId], references: [id])
+
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  Attendance              Attendance[]
+  ExamScores              ExamScores[]
+  financeFees             financeFees[]
+  StudentEvents           StudentEvents[]
+  TransportFeeCollections TransportFeeCollections[]
+  HostelAllocations       HostelAllocations[]
+  HostelFeeCollections    HostelFeeCollections[]
+}
+
+model AcadmicYear {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Batches   Batches[]
+}
+
+model Courses {
+  id          String      @id @default(uuid())
+  name        String
+  code        String
+  section     String
+  gradingType GradingType
+  description String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Batches   Batches[]
+}
+
+model Batches {
+  id            String      @id @default(uuid())
+  name          String
+  courseId      String
+  course        Courses     @relation(fields: [courseId], references: [id])
+  acadmicYearId String
+  acadmicYear   AcadmicYear @relation(fields: [acadmicYearId], references: [id])
+  startDate     DateTime
+  endDate       DateTime
+  isDeleted     Boolean
+  isActive      Boolean
+
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  Subjects             Subjects[]
+  subjectsId           String?
+  ElectiveGroups       ElectiveGroups[]
+  Attendance           Attendance[]
+  AttendanceReport     AttendanceReport[]
+  ExamGroups           ExamGroups[]
+  GradingLevel         GradingLevel[]
+  TimeTable            TimeTable[]
+  ClassTimings         ClassTimings[]
+  financeFeeCategories financeFeeCategories[]
+  FeeCollection        FeeCollection[]
+  Notices              Notices[]
+}
+
+model Subjects {
+  id               String  @id @default(uuid())
+  name             String
+  code             String
+  batchId          String
+  batch            Batches @relation(fields: [batchId], references: [id])
+  noExams          Int
+  maxWeeklyClasses Int
+  electiveGroupId  String?
+  isDeleted        Boolean
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  ElectiveGroups   ElectiveGroups?    @relation(fields: [electiveGroupsId], references: [id])
+  electiveGroupsId String?
+  Exams            Exams[]
+  TimeTableEntries TimeTableEntries[]
+}
+
+model ElectiveGroups {
+  id        String  @id @default(uuid())
+  name      String
+  batchId   String
+  batch     Batches @relation(fields: [batchId], references: [id])
+  isDeleted Boolean
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Subjects  Subjects[]
+}
+
+// Attendance Management
+model Attendance {
+  id        String   @id @default(uuid())
+  date      DateTime
+  status    String // Present, Absent, Leave, Late, etc...
+  reson     String?
+  createdBy String
+  user      User     @relation(fields: [createdBy], references: [id])
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  batchId   String
+  batch     Batches  @relation(fields: [batchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AttendanceReport {
+  id          String   @id @default(uuid())
+  batchId     String
+  batch       Batches  @relation(fields: [batchId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  reportType  String // Daily, Weekly, Monthly, etc...
+  generatedBy String
+  user        User     @relation(fields: [generatedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// examination and grading 
+model ExamGroups {
+  id              String   @id @default(uuid())
+  name            String
+  batchId         String
+  batch           Batches  @relation(fields: [batchId], references: [id])
+  examType        String
+  isPublished     Boolean
+  resultPublished Boolean
+  examDate        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Exams     Exams[]
+}
+
+model Exams {
+  id          String     @id @default(uuid())
+  examGroupId String
+  examGroup   ExamGroups @relation(fields: [examGroupId], references: [id])
+  subjectId   String
+  subject     Subjects   @relation(fields: [subjectId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  maxMarks    Int
+  minMarks    Int
+  weightage   Int
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  ExamScores ExamScores[]
+}
+
+model ExamScores {
+  id            String       @id @default(uuid())
+  examId        String
+  exam          Exams        @relation(fields: [examId], references: [id])
+  studentId     String
+  student       Student      @relation(fields: [studentId], references: [id])
+  marks         Int
+  gradingLeveId String
+  gradingLevel  GradingLevel @relation(fields: [gradingLeveId], references: [id])
+  remarks       String?
+  isFailed      Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum GradingType {
+  PERCENTAGE
+  CGPA
+}
+
+model GradingLevel {
+  id          String  @id @default(uuid())
+  name        String
+  batchId     String
+  batch       Batches @relation(fields: [batchId], references: [id])
+  minMarks    Float
+  maxMarks    Float
+  gradePoint  Float
+  description String?
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  ExamScores ExamScores[]
+}
+
+// timetable management 
+model TimeTable {
+  id          String   @id @default(uuid())
+  batchId     String
+  batch       Batches  @relation(fields: [batchId], references: [id])
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  TimeTableEntries TimeTableEntries[]
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model TimeTableEntries {
+  id            String       @id @default(uuid())
+  timeTableId   String
+  timeTable     TimeTable    @relation(fields: [timeTableId], references: [id])
+  weekDay       WeekDay
+  classTimingId String
+  classTimings  ClassTimings @relation(fields: [classTimingId], references: [id])
+  subjectId     String
+  subject       Subjects     @relation(fields: [subjectId], references: [id])
+  teacherId     String
+  employee      Employee     @relation(fields: [teacherId], references: [id])
+  roomId        String
+  room          Rooms        @relation(fields: [roomId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rooms {
+  id          String  @id @default(uuid())
+  name        String
+  code        String  @unique
+  capacity    Int
+  description String?
+  isActive    Boolean @default(true)
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  TimeTableEntries TimeTableEntries[]
+}
+
+model ClassTimings {
+  id        String   @id @default(uuid())
+  batchId   String
+  batch     Batches  @relation(fields: [batchId], references: [id])
+  name      String
+  startTime DateTime
+  endTime   DateTime
+  isBreak   Boolean
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  TimeTableEntries TimeTableEntries[]
+}
+
+// financial management
+
+model financeFeeCategories {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  batchId     String
+  batch       Batches @relation(fields: [batchId], references: [id])
+  isDeleted   Boolean @default(false)
+  isMaster    Boolean @default(false)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  FeeCollection FeeCollection[]
+}
+
+model financeFees {
+  id              String        @id @default(uuid())
+  studentId       String
+  student         Student       @relation(fields: [studentId], references: [id])
+  feeCollectionId String
+  feeCollection   FeeCollection @relation(fields: [feeCollectionId], references: [id])
+  isPaid          Boolean       @default(false)
+  balance         Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FeeCollection {
+  id            String               @id @default(uuid())
+  name          String
+  startDate     DateTime
+  endDate       DateTime
+  dueDate       DateTime
+  batchId       String
+  batch         Batches              @relation(fields: [batchId], references: [id])
+  feeCategoryId String
+  feeCategory   financeFeeCategories @relation(fields: [feeCategoryId], references: [id])
+  isDeleted     Boolean              @default(false)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  financeFees financeFees[]
+}
+
+enum FinanceType {
+  income
+  expense
+}
+
+model Transactions {
+  id                  String      @id @default(uuid())
+  title               String
+  amount              Float
+  transactionDate     DateTime
+  financeType         FinanceType
+  paymentMode         String
+  referenceNo         String
+  transactionCategory String
+  payeeId             String
+  user                User        @relation(fields: [payeeId], references: [id])
+  payeeType           String
+
+  paymentMethod String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// HR management 
+model EmployeeCategories {
+  id     String @id @default(uuid())
+  name   String @unique
+  prefix String
+  status String
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  EmployeePositions EmployeePositions[]
+  Employee          Employee[]
+}
+
+model EmployeeDepartements {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  code   String  @unique
+  status Boolean @default(true)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Employee  Employee[]
+  Notices   Notices[]
+}
+
+model EmployeePositions {
+  id                 String             @id @default(uuid())
+  name               String
+  employeeCategoryId String
+  employeeCategory   EmployeeCategories @relation(fields: [employeeCategoryId], references: [id])
+  status             Boolean            @default(true)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Employee  Employee[]
+}
+
+model Employee {
+  id                String               @id @default(uuid())
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id])
+  employeeNumber    String               @unique
+  joiningDate       DateTime
+  departmentId      String
+  department        EmployeeDepartements @relation(fields: [departmentId], references: [id])
+  categoryId        String
+  category          EmployeeCategories   @relation(fields: [categoryId], references: [id])
+  positionId        String
+  position          EmployeePositions    @relation(fields: [positionId], references: [id])
+  qualification     String?
+  experienceDetails String?
+  totalExperience   Int?                 @default(0)
+  status            Boolean              @default(true)
+
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  TimeTableEntries    TimeTableEntries[]
+  EmployeeBankDetails EmployeeBankDetails[]
+  EmployeeAttendance  EmployeeAttendance[]
+  EmployeePlayslips   EmployeePlayslips[]
+  inventory_stores    inventory_stores[]
+  TransportVehicles   TransportVehicles[]
+  Hostels             Hostels[]
+}
+
+model EmployeeBankDetails {
+  id            String   @id @default(uuid())
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  bankName      String
+  accountNumber String
+  branchName    String
+  ifscCode      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmployeeAttendance {
+  id             String   @id @default(uuid())
+  employeeId     String
+  employee       Employee @relation(fields: [employeeId], references: [id])
+  attendanceDate DateTime
+  inTime         DateTime
+  outTime        DateTime
+  reson          String?
+  isHalfDay      Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmployeePlayslips {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  salaryDate DateTime
+  basicPay   Float
+  deductions Float
+  allowances Float
+  netPay     Float
+  isApproved Boolean  @default(false)
+  approvedBy String?
+  approvedby User?    @relation("ApprovedPayslips", fields: [approvedBy], references: [id])
+  isRejected Boolean  @default(false)
+  rejectedBy String?
+  rejectedby User?    @relation("RejectedPayslips", fields: [rejectedBy], references: [id])
+  status     String   @default("Pending") // Approved, Rejected, Pending 
+  remarks    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+// communication management 
+model Notices {
+  id                 String                @id @default(uuid())
+  title              String
+  content            String
+  authorId           String
+  author             User                  @relation(fields: [authorId], references: [id])
+  startDate          DateTime
+  endDate            DateTime
+  isActive           Boolean               @default(true)
+  targetType         String // department, batch, etc.
+  targetBatchId      String
+  targetDepartmentId String
+  targetBatch        Batches?              @relation(fields: [targetBatchId], references: [id]) // FK to batches
+  targetDepartment   EmployeeDepartements? @relation(fields: [targetDepartmentId], references: [id]) // FK to departments
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Messages {
+  id                String              @id @default(uuid())
+  senderId          String
+  sender            User                @relation(fields: [senderId], references: [id])
+  subject           String
+  content           String
+  isDeletedBySender Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  MessageRecipients MessageRecipients[]
+}
+
+model MessageRecipients {
+  id          String   @id @default(uuid())
+  messageId   String
+  message     Messages @relation(fields: [messageId], references: [id])
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  isRead      Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentEvents {
+  id         String   @id @default(uuid())
+  eventId    String
+  event      Events   @relation(fields: [eventId], references: [id])
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Events {
+  id            String          @id @default(uuid())
+  title         String          @unique
+  description   String?
+  startDate     DateTime
+  endDate       DateTime
+  isCommon      Boolean         @default(false)
+  isHoliday     Boolean         @default(false)
+  isExam        Boolean         @default(false)
+  isDue         Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  StudentEvents StudentEvents[]
+}
+
+// Library Management
+
+model Books {
+  id             String          @id @default(uuid())
+  title          String
+  author         String
+  bookNumber     String          @unique
+  isbn           String?
+  edition        String?
+  publisher      String?
+  bookCategoryId String
+  bookCategory   BookCategories  @relation(fields: [bookCategoryId], references: [id])
+  bookLocationId String?
+  bookLocation   BookLocations?  @relation(fields: [bookLocationId], references: [id])
+  status         BookStatus      @default(AVAILABLE)
+  price          Float           @default(0)
+  quantity       Int             @default(1)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  BookMovements  BookMovements[]
+}
+
+model BookLocations {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Books       Books[]
+}
+
+enum BookStatus {
+  AVAILABLE
+  ISSUED
+  LOST
+  DAMAGED
+}
+
+model BookCategories {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Books       Books[]
+}
+
+model BookMovements {
+  id         String             @id @default(uuid())
+  bookId     String
+  book       Books              @relation(fields: [bookId], references: [id])
+  userId     String
+  user       User               @relation(fields: [userId], references: [id])
+  issueDate  DateTime
+  dueDate    DateTime
+  returnDate DateTime?
+  status     BookMovementStatus @default(ISSUED)
+  fineAmount Float              @default(0)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+enum BookMovementStatus {
+  ISSUED
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+// Inventory Management
+
+model InventoryCategories {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InventoryItems {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  categoryId  String
+  quantity    Int      @default(0)
+  amount      Float    @default(0)
+  description String?
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InventoryPurchases {
+  id           String   @id @default(uuid())
+  itemId       String
+  purchaseDate DateTime @default(now())
+  quantity     Int      @default(0)
+  amount       Float    @default(0)
+  supplierId   String
+
+  storeId   String
+  invoiceNo String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model inventory_stores {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  code      String   @unique
+  location  String?
+  keeperId  String
+  keeper    Employee @relation(fields: [keeperId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 12. Transport Management
+
+model TransportRoutes {
+  id                      String                    @id @default(uuid())
+  name                    String
+  description             String?
+  fare                    Float
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  TransportVehicles       TransportVehicles[]
+  TransportFeeCollections TransportFeeCollections[]
+}
+
+model TransportVehicles {
+  id                 String          @id @default(uuid())
+  name               String
+  registrationNumber String          @unique
+  vehicleType        String
+  capacity           Int
+  driverId           String
+  driver             Employee        @relation(fields: [driverId], references: [id])
+  routeId            String
+  route              TransportRoutes @relation(fields: [routeId], references: [id])
+  status             String          @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TransportFeeCollections {
+  id             String          @id @default(uuid())
+  studentId      String
+  student        Student         @relation(fields: [studentId], references: [id])
+  routeId        String
+  route          TransportRoutes @relation(fields: [routeId], references: [id])
+  collectionDate DateTime        @default(now())
+  amount         Float
+  isPaid         Boolean         @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 13. Hostel Management
+
+model Hostels {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  code        String        @unique
+  type        String
+  capacity    Int
+  wardenId    String
+  warden      Employee      @relation(fields: [wardenId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  HostelRooms HostelRooms[]
+}
+
+model HostelRooms {
+  id                   String                 @id @default(uuid())
+  hostelId             String
+  hostel               Hostels                @relation(fields: [hostelId], references: [id])
+  roomNumber           String
+  roomType             String
+  capacity             Int
+  costPerBed           Float
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  HostelAllocations    HostelAllocations[]
+  HostelFeeCollections HostelFeeCollections[]
+}
+
+model HostelAllocations {
+  id            String      @id @default(uuid())
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id])
+  hostelRoomId  String
+  hostelRoom    HostelRooms @relation(fields: [hostelRoomId], references: [id])
+  allotmentDate DateTime    @default(now())
+  vacatingDate  DateTime?
+  status        String      @default("active")
+
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  HostelFeeCollections HostelFeeCollections[]
+}
+
+model HostelFeeCollections {
+  id             String            @id @default(uuid())
+  studentId      String
+  student        Student           @relation(fields: [studentId], references: [id])
+  hostelRoomId   String
+  hostelRoom     HostelRooms       @relation(fields: [hostelRoomId], references: [id])
+  allocationId   String
+  allocation     HostelAllocations @relation(fields: [allocationId], references: [id])
+  collectionDate DateTime          @default(now())
+  amount         Float
+  isPaid         Boolean           @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 14. System Configuration
+
+model Settings {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  value       String
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Institutions {
+  id           String  @id @default(uuid())
+  name         String
+  code         String  @unique
+  address      String
+  phone        String
+  email        String
+  website      String?
+  currencyType String  @default("USD")
+  country      String
+  timezone     String  @default("UTC")
+  logoPath     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLogs {
+  id        String  @id @default(uuid())
+  userid    String
+  user      User    @relation(fields: [userid], references: [id])
+  action    String
+  target    String
+  targetId  String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

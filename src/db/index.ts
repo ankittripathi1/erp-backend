@@ -1,3 +1,5 @@
-import { drizzle } from "drizzle-orm/singlestore/driver";
+import { PrismaClient } from "@prisma/client";
 
-const db = drizzle(process.env.DATABASE_URL);
+const prismaClient = new PrismaClient();
+
+export default prismaClient;
