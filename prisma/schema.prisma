@@ -538,6 +538,12 @@ model Role {
 
 model User {
   id BigInt @id @default(autoincrement())
+  username String @unique
+  first_name String @default("")
+  last_name String @default("")
+  is_staff Boolean @default(false)
+  is_superuser Boolean @default(false)
+  last_login DateTime?
   email String? @unique
   middle_name String @default("")
   phone String @default("")
