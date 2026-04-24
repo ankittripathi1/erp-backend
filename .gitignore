@@ -15,4 +15,9 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
-tasks/
+
+/generated/prisma
+node_modules/
+dist/
+.env
+generated/
