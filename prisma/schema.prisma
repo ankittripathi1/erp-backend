@@ -539,6 +539,7 @@ model Role {
 model User {
   id BigInt @id @default(autoincrement())
   username String @unique
+  password String
   first_name String @default("")
   last_name String @default("")
   is_staff Boolean @default(false)
