@@ -7,6 +7,7 @@ import { RolesModule } from "./modules/roles/roles.module";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { BigIntSerializerInterceptor } from "./common/interceptors/bigint-serializer.interceptor";
 import { AuthModule } from "./modules/auth/auth.module";
+import { InstitutesModule } from './modules/organization/institutes/institutes.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from "./modules/auth/auth.module";
     UserModule,
     RolesModule,
     AuthModule,
+    InstitutesModule,
   ],
   controllers: [AppController],
   providers: [
