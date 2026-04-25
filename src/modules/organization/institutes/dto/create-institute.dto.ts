@@ -2,10 +2,10 @@ import { IsDateString, IsEmail, IsOptional, IsString, IsUrl } from "class-valida
 
 export class CreateInstituteDto {
     @IsString()
-    name: string;
+    name!: string;
 
     @IsString()
-    short_code: string;
+    short_code!: string;
 
     @IsOptional()
     @IsDateString()

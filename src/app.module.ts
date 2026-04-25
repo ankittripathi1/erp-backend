@@ -10,6 +10,7 @@ import { InstitutesModule } from './modules/organization/institutes/institutes.m
 import { PrsimaModule } from "./prisma/prisma.module";
 import { CampusesModule } from './modules/organization/campuses/campuses.module';
 import { SchoolsModule } from './modules/organization/schools/schools.module';
+import { DepartmentsModule } from './modules/organization/departments/departments.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SchoolsModule } from './modules/organization/schools/schools.module';
     InstitutesModule,
     CampusesModule,
     SchoolsModule,
+    DepartmentsModule,
   ],
   controllers: [AppController],
   providers: [
