@@ -1,0 +1,2250 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AcademicTerm {
+  id BigInt @id @default(autoincrement())
+  academic_year_id BigInt
+  academic_year AcademicYear @relation("AcademicTerm_academic_year_AcademicYear", fields: [academic_year_id], references: [id])
+  name String
+  term_type String
+  start_date DateTime?
+  end_date DateTime?
+  is_current Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  section_term_set Section[] @relation("Section_term_AcademicTerm")
+  courseoffering_term_set CourseOffering[] @relation("CourseOffering_term_AcademicTerm")
+  exam_term_set Exam[] @relation("Exam_term_AcademicTerm")
+  studenttermresult_term_set StudentTermResult[] @relation("StudentTermResult_term_AcademicTerm")
+  feestructure_term_set FeeStructure[] @relation("FeeStructure_term_AcademicTerm")
+  feeinvoice_term_set FeeInvoice[] @relation("FeeInvoice_term_AcademicTerm")
+  student_current_term_set Student[] @relation("Student_current_term_AcademicTerm")
+  @@map("academic_academicterm")
+}
+
+model AcademicYear {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  start_date DateTime
+  end_date DateTime
+  is_current Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  academicterm_academic_year_set AcademicTerm[] @relation("AcademicTerm_academic_year_AcademicYear")
+  hostelapplication_academic_year_set HostelApplication[] @relation("HostelApplication_academic_year_AcademicYear")
+  holidaylist_academic_year_set HolidayList[] @relation("HolidayList_academic_year_AcademicYear")
+  placementdrive_academic_year_set PlacementDrive[] @relation("PlacementDrive_academic_year_AcademicYear")
+  @@map("academic_academicyear")
+}
+
+model Batch {
+  id BigInt @id @default(autoincrement())
+  program_id BigInt
+  program Program @relation("Batch_program_Program", fields: [program_id], references: [id])
+  name String
+  start_year Int
+  end_year Int
+  max_strength Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  section_batch_set Section[] @relation("Section_batch_Batch")
+  alumni_batch_set Alumni[] @relation("Alumni_batch_Batch")
+  announcement_batch_set Announcement[] @relation("Announcement_batch_Batch")
+  feestructure_batch_set FeeStructure[] @relation("FeeStructure_batch_Batch")
+  student_batch_set Student[] @relation("Student_batch_Batch")
+  @@map("academic_batch")
+}
+
+model Program {
+  id BigInt @id @default(autoincrement())
+  department_id BigInt
+  department Department @relation("Program_department_Department", fields: [department_id], references: [id])
+  name String
+  code String
+  level String
+  duration_years Decimal
+  total_terms Int
+  total_credits Int?
+  grading_scheme_id BigInt?
+  grading_scheme GradingScheme? @relation("Program_grading_scheme_GradingScheme", fields: [grading_scheme_id], references: [id])
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  batch_program_set Batch[] @relation("Batch_program_Program")
+  alumni_program_set Alumni[] @relation("Alumni_program_Program")
+  announcement_program_set Announcement[] @relation("Announcement_program_Program")
+  programcourse_program_set ProgramCourse[] @relation("ProgramCourse_program_Program")
+  feestructure_program_set FeeStructure[] @relation("FeeStructure_program_Program")
+  jobposting_eligible_programs_set JobPosting[] @relation("JobPosting_eligible_programs_Program")
+  application_program_set Application[] @relation("Application_program_Program")
+  student_program_set Student[] @relation("Student_program_Program")
+  @@map("academic_program")
+}
+
+model Section {
+  id BigInt @id @default(autoincrement())
+  batch_id BigInt
+  batch Batch @relation("Section_batch_Batch", fields: [batch_id], references: [id])
+  term_id BigInt
+  term AcademicTerm @relation("Section_term_AcademicTerm", fields: [term_id], references: [id])
+  name String
+  class_teacher_id BigInt?
+  class_teacher Employee? @relation("Section_class_teacher_Employee", fields: [class_teacher_id], references: [id])
+  max_strength Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  courseoffering_section_set CourseOffering[] @relation("CourseOffering_section_Section")
+  student_current_section_set Student[] @relation("Student_current_section_Section")
+  timetableentry_section_set TimetableEntry[] @relation("TimetableEntry_section_Section")
+  @@map("academic_section")
+}
+
+model AccountGroup {
+  id BigInt @id @default(autoincrement())
+  name String
+  code String @unique
+  parent_id BigInt?
+  parent AccountGroup? @relation("AccountGroup_parent_AccountGroup", fields: [parent_id], references: [id])
+  root_type String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  accountgroup_parent_set AccountGroup[] @relation("AccountGroup_parent_AccountGroup")
+  chartofaccount_group_set ChartOfAccount[] @relation("ChartOfAccount_group_AccountGroup")
+  @@map("accounting_accountgroup")
+}
+
+model ChartOfAccount {
+  id BigInt @id @default(autoincrement())
+  code String @unique
+  name String
+  group_id BigInt
+  group AccountGroup @relation("ChartOfAccount_group_AccountGroup", fields: [group_id], references: [id])
+  account_type String
+  currency_id BigInt?
+  currency Currency? @relation("ChartOfAccount_currency_Currency", fields: [currency_id], references: [id])
+  is_bank Boolean @default(false)
+  opening_balance Decimal @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  journalline_account_set JournalLine[] @relation("JournalLine_account_ChartOfAccount")
+  @@map("accounting_chartofaccount")
+}
+
+model FiscalYear {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  start_date DateTime
+  end_date DateTime
+  is_closed Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  journalentry_fiscal_year_set JournalEntry[] @relation("JournalEntry_fiscal_year_FiscalYear")
+  @@map("accounting_fiscalyear")
+}
+
+model JournalEntry {
+  id BigInt @id @default(autoincrement())
+  entry_no String @unique
+  fiscal_year_id BigInt
+  fiscal_year FiscalYear @relation("JournalEntry_fiscal_year_FiscalYear", fields: [fiscal_year_id], references: [id])
+  posting_date DateTime
+  narration String @default("")
+  source_type String
+  source_id BigInt?
+  status String
+  posted_by_id BigInt?
+  posted_by User? @relation("JournalEntry_posted_by_User", fields: [posted_by_id], references: [id])
+  posted_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  journalline_entry_set JournalLine[] @relation("JournalLine_entry_JournalEntry")
+  alumnidonation_journal_entry_set AlumniDonation[] @relation("AlumniDonation_journal_entry_JournalEntry")
+  purchase_journal_entry_set Purchase[] @relation("Purchase_journal_entry_JournalEntry")
+  feeinvoice_journal_entry_set FeeInvoice[] @relation("FeeInvoice_journal_entry_JournalEntry")
+  payment_journal_entry_set Payment[] @relation("Payment_journal_entry_JournalEntry")
+  refund_journal_entry_set Refund[] @relation("Refund_journal_entry_JournalEntry")
+  libraryfine_journal_entry_set LibraryFine[] @relation("LibraryFine_journal_entry_JournalEntry")
+  payslip_journal_entry_set Payslip[] @relation("Payslip_journal_entry_JournalEntry")
+  @@map("accounting_journalentry")
+}
+
+model JournalLine {
+  id BigInt @id @default(autoincrement())
+  entry_id BigInt
+  entry JournalEntry @relation("JournalLine_entry_JournalEntry", fields: [entry_id], references: [id])
+  account_id BigInt
+  account ChartOfAccount @relation("JournalLine_account_ChartOfAccount", fields: [account_id], references: [id])
+  debit Decimal @default(0)
+  credit Decimal @default(0)
+  party_content_type_id BigInt?
+  party_id BigInt?
+  party String
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("accounting_journalline")
+}
+
+model Alumni {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt @unique
+  user User @relation("Alumni_user_User", fields: [user_id], references: [id])
+  student_id BigInt? @unique
+  student Student? @relation("Alumni_student_Student", fields: [student_id], references: [id])
+  program_id BigInt?
+  program Program? @relation("Alumni_program_Program", fields: [program_id], references: [id])
+  batch_id BigInt?
+  batch Batch? @relation("Alumni_batch_Batch", fields: [batch_id], references: [id])
+  graduation_year Int
+  current_company String @default("")
+  current_role String @default("")
+  linkedin_url String @default("")
+  location String @default("")
+  bio String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  alumnieventattendee_alumni_set AlumniEventAttendee[] @relation("AlumniEventAttendee_alumni_Alumni")
+  alumnidonation_alumni_set AlumniDonation[] @relation("AlumniDonation_alumni_Alumni")
+  @@map("alumni_alumni")
+}
+
+model AlumniDonation {
+  id BigInt @id @default(autoincrement())
+  alumni_id BigInt
+  alumni Alumni @relation("AlumniDonation_alumni_Alumni", fields: [alumni_id], references: [id])
+  amount Decimal
+  purpose String @default("")
+  donated_on DateTime
+  payment_mode String @default("")
+  txn_reference String @default("")
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("AlumniDonation_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("alumni_alumnidonation")
+}
+
+model AlumniEvent {
+  id BigInt @id @default(autoincrement())
+  title String
+  event_type String
+  description String @default("")
+  start_at DateTime
+  end_at DateTime?
+  venue String @default("")
+  is_online Boolean @default(false)
+  meeting_link String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  alumnieventattendee_event_set AlumniEventAttendee[] @relation("AlumniEventAttendee_event_AlumniEvent")
+  @@map("alumni_alumnievent")
+}
+
+model AlumniEventAttendee {
+  id BigInt @id @default(autoincrement())
+  event_id BigInt
+  event AlumniEvent @relation("AlumniEventAttendee_event_AlumniEvent", fields: [event_id], references: [id])
+  alumni_id BigInt
+  alumni Alumni @relation("AlumniEventAttendee_alumni_Alumni", fields: [alumni_id], references: [id])
+  registered_on DateTime
+  attended Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("alumni_alumnieventattendee")
+}
+
+model Asset {
+  id BigInt @id @default(autoincrement())
+  asset_tag String @unique
+  name String
+  category_id BigInt
+  category AssetCategory @relation("Asset_category_AssetCategory", fields: [category_id], references: [id])
+  vendor_id BigInt?
+  vendor Vendor? @relation("Asset_vendor_Vendor", fields: [vendor_id], references: [id])
+  purchase_date DateTime?
+  purchase_cost Decimal?
+  serial_no String @default("")
+  location String @default("")
+  condition String
+  warranty_until DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  assetassignment_asset_set AssetAssignment[] @relation("AssetAssignment_asset_Asset")
+  purchaseitem_asset_set PurchaseItem[] @relation("PurchaseItem_asset_Asset")
+  @@map("assets_asset")
+}
+
+model AssetAssignment {
+  id BigInt @id @default(autoincrement())
+  asset_id BigInt
+  asset Asset @relation("AssetAssignment_asset_Asset", fields: [asset_id], references: [id])
+  assigned_content_type_id BigInt
+  assigned_object_id BigInt
+  assigned_to String
+  assigned_on DateTime
+  returned_on DateTime?
+  remarks String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("assets_assetassignment")
+}
+
+model AssetCategory {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  depreciation_percent Decimal?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  asset_category_set Asset[] @relation("Asset_category_AssetCategory")
+  @@map("assets_assetcategory")
+}
+
+model Purchase {
+  id BigInt @id @default(autoincrement())
+  po_no String @unique
+  vendor_id BigInt
+  vendor Vendor @relation("Purchase_vendor_Vendor", fields: [vendor_id], references: [id])
+  purchase_date DateTime
+  total_amount Decimal
+  status String @default("draft")
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("Purchase_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  purchaseitem_purchase_set PurchaseItem[] @relation("PurchaseItem_purchase_Purchase")
+  @@map("assets_purchase")
+}
+
+model PurchaseItem {
+  id BigInt @id @default(autoincrement())
+  purchase_id BigInt
+  purchase Purchase @relation("PurchaseItem_purchase_Purchase", fields: [purchase_id], references: [id])
+  description String
+  quantity Int @default(1)
+  unit_price Decimal
+  asset_id BigInt?
+  asset Asset? @relation("PurchaseItem_asset_Asset", fields: [asset_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("assets_purchaseitem")
+}
+
+model Vendor {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  gst_no String @default("")
+  contact_name String @default("")
+  contact_email String @default("")
+  contact_phone String @default("")
+  address String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  asset_vendor_set Asset[] @relation("Asset_vendor_Vendor")
+  purchase_vendor_set Purchase[] @relation("Purchase_vendor_Vendor")
+  @@map("assets_vendor")
+}
+
+model AuditLog {
+  id BigInt @id @default(autoincrement())
+  timestamp DateTime
+  actor_id BigInt?
+  actor User? @relation("AuditLog_actor_User", fields: [actor_id], references: [id])
+  action String
+  target_content_type_id BigInt?
+  target_id BigInt?
+  target String
+  changes Json?
+  user_agent String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("audit_auditlog")
+}
+
+model Setting {
+  id BigInt @id @default(autoincrement())
+  key String @unique
+  value Json
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("audit_setting")
+}
+
+model Announcement {
+  id BigInt @id @default(autoincrement())
+  title String
+  body String
+  audience String
+  department_id BigInt?
+  department Department? @relation("Announcement_department_Department", fields: [department_id], references: [id])
+  program_id BigInt?
+  program Program? @relation("Announcement_program_Program", fields: [program_id], references: [id])
+  batch_id BigInt?
+  batch Batch? @relation("Announcement_batch_Batch", fields: [batch_id], references: [id])
+  author_id BigInt?
+  author User? @relation("Announcement_author_User", fields: [author_id], references: [id])
+  published_at DateTime?
+  expires_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("communication_announcement")
+}
+
+model Event {
+  id BigInt @id @default(autoincrement())
+  title String
+  description String @default("")
+  start_at DateTime
+  end_at DateTime?
+  venue String @default("")
+  organized_by String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("communication_event")
+}
+
+model Notification {
+  id BigInt @id @default(autoincrement())
+  recipient_id BigInt
+  recipient User @relation("Notification_recipient_User", fields: [recipient_id], references: [id])
+  title String
+  body String @default("")
+  channel String
+  status String
+  sent_at DateTime?
+  read_at DateTime?
+  url String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("communication_notification")
+}
+
+model Address {
+  id BigInt @id @default(autoincrement())
+  line1 String
+  line2 String @default("")
+  city String
+  state String @default("")
+  postal_code String @default("")
+  country String @default("India")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  useraddress_address_set UserAddress[] @relation("UserAddress_address_Address")
+  emergencycontact_address_set EmergencyContact[] @relation("EmergencyContact_address_Address")
+  institute_address_set Institute[] @relation("Institute_address_Address")
+  campus_address_set Campus[] @relation("Campus_address_Address")
+  guardian_address_set Guardian[] @relation("Guardian_address_Address")
+  @@map("core_address")
+}
+
+model Currency {
+  id BigInt @id @default(autoincrement())
+  code String @unique
+  name String
+  symbol String @default("")
+  is_default Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  chartofaccount_currency_set ChartOfAccount[] @relation("ChartOfAccount_currency_Currency")
+  @@map("core_currency")
+}
+
+model Document {
+  id BigInt @id @default(autoincrement())
+  content_type_id BigInt
+  object_id BigInt
+  owner String
+  name String
+  doc_type String @default("")
+  file String
+  uploaded_by_id BigInt?
+  uploaded_by User? @relation("Document_uploaded_by_User", fields: [uploaded_by_id], references: [id])
+  verified Boolean @default(false)
+  mime_type String @default("")
+  file_size BigInt?
+  verified_at DateTime?
+  verified_by_id BigInt?
+  verified_by User? @relation("Document_verified_by_User", fields: [verified_by_id], references: [id])
+  is_private Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("core_document")
+}
+
+model EmergencyContact {
+  id BigInt @id @default(autoincrement())
+  content_type_id BigInt
+  object_id BigInt
+  owner String
+  name String
+  relation String
+  phone String
+  email String @default("")
+  address_id BigInt?
+  address Address? @relation("EmergencyContact_address_Address", fields: [address_id], references: [id])
+  priority Int @default(1)
+  phone_verified Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("core_emergencycontact")
+}
+
+model Role {
+  id BigInt @id @default(autoincrement())
+  code String @unique
+  name String
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  userrole_role_set UserRole[] @relation("UserRole_role_Role")
+  @@map("core_role")
+}
+
+model User {
+  id BigInt @id @default(autoincrement())
+  username String @unique
+  password String
+  first_name String @default("")
+  last_name String @default("")
+  is_staff Boolean @default(false)
+  is_superuser Boolean @default(false)
+  last_login DateTime?
+  email String? @unique
+  middle_name String @default("")
+  phone String @default("")
+  date_of_birth DateTime?
+  gender String @default("")
+  blood_group String @default("")
+  profile_photo String?
+  user_type String
+  account_status String
+  email_verified Boolean @default(false)
+  phone_verified Boolean @default(false)
+  password_changed_at DateTime?
+  last_failed_login_at DateTime?
+  last_seen_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  journalentry_posted_by_set JournalEntry[] @relation("JournalEntry_posted_by_User")
+  alumni_user_set Alumni[] @relation("Alumni_user_User")
+  auditlog_actor_set AuditLog[] @relation("AuditLog_actor_User")
+  announcement_author_set Announcement[] @relation("Announcement_author_User")
+  notification_recipient_set Notification[] @relation("Notification_recipient_User")
+  userrole_user_set UserRole[] @relation("UserRole_user_User")
+  userrole_assigned_by_set UserRole[] @relation("UserRole_assigned_by_User")
+  useraddress_user_set UserAddress[] @relation("UserAddress_user_User")
+  document_uploaded_by_set Document[] @relation("Document_uploaded_by_User")
+  document_verified_by_set Document[] @relation("Document_verified_by_User")
+  employee_user_set Employee[] @relation("Employee_user_User")
+  librarymember_user_set LibraryMember[] @relation("LibraryMember_user_User")
+  student_user_set Student[] @relation("Student_user_User")
+  guardian_user_set Guardian[] @relation("Guardian_user_User")
+  @@map("core_user")
+}
+
+model UserAddress {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt
+  user User @relation("UserAddress_user_User", fields: [user_id], references: [id])
+  address_id BigInt
+  address Address @relation("UserAddress_address_Address", fields: [address_id], references: [id])
+  address_type String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("core_useraddress")
+}
+
+model UserRole {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt
+  user User @relation("UserRole_user_User", fields: [user_id], references: [id])
+  role_id BigInt
+  role Role @relation("UserRole_role_Role", fields: [role_id], references: [id])
+  assigned_at DateTime
+  assigned_by_id BigInt?
+  assigned_by User? @relation("UserRole_assigned_by_User", fields: [assigned_by_id], references: [id])
+  revoked_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("core_userrole")
+}
+
+model Course {
+  id BigInt @id @default(autoincrement())
+  department_id BigInt
+  department Department @relation("Course_department_Department", fields: [department_id], references: [id])
+  code String @unique
+  title String
+  credits Decimal
+  course_type String
+  theory_hours Int @default(0)
+  practical_hours Int @default(0)
+  description String @default("")
+  prerequisites Course[] @relation("Course_prerequisites_Course")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  course_prerequisites_set Course[] @relation("Course_prerequisites_Course")
+  courseprerequisite_course_set CoursePrerequisite[] @relation("CoursePrerequisite_course_Course")
+  courseprerequisite_prereq_course_set CoursePrerequisite[] @relation("CoursePrerequisite_prereq_course_Course")
+  programcourse_course_set ProgramCourse[] @relation("ProgramCourse_course_Course")
+  courseoffering_course_set CourseOffering[] @relation("CourseOffering_course_Course")
+  syllabustopic_course_set SyllabusTopic[] @relation("SyllabusTopic_course_Course")
+  @@map("courses_course")
+}
+
+model CourseOffering {
+  id BigInt @id @default(autoincrement())
+  course_id BigInt
+  course Course @relation("CourseOffering_course_Course", fields: [course_id], references: [id])
+  term_id BigInt
+  term AcademicTerm @relation("CourseOffering_term_AcademicTerm", fields: [term_id], references: [id])
+  section_id BigInt?
+  section Section? @relation("CourseOffering_section_Section", fields: [section_id], references: [id])
+  primary_teacher_id BigInt?
+  primary_teacher Employee? @relation("CourseOffering_primary_teacher_Employee", fields: [primary_teacher_id], references: [id])
+  room_id BigInt?
+  room Room? @relation("CourseOffering_room_Room", fields: [room_id], references: [id])
+  capacity Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  teachingassignment_offering_set TeachingAssignment[] @relation("TeachingAssignment_offering_CourseOffering")
+  examschedule_offering_set ExamSchedule[] @relation("ExamSchedule_offering_CourseOffering")
+  coursematerial_offering_set CourseMaterial[] @relation("CourseMaterial_offering_CourseOffering")
+  assignment_offering_set Assignment[] @relation("Assignment_offering_CourseOffering")
+  quiz_offering_set Quiz[] @relation("Quiz_offering_CourseOffering")
+  attendancesession_offering_set AttendanceSession[] @relation("AttendanceSession_offering_CourseOffering")
+  studentenrollment_offering_set StudentEnrollment[] @relation("StudentEnrollment_offering_CourseOffering")
+  timetableentry_offering_set TimetableEntry[] @relation("TimetableEntry_offering_CourseOffering")
+  @@map("courses_courseoffering")
+}
+
+model CoursePrerequisite {
+  id BigInt @id @default(autoincrement())
+  course_id BigInt
+  course Course @relation("CoursePrerequisite_course_Course", fields: [course_id], references: [id])
+  prereq_course_id BigInt
+  prereq_course Course @relation("CoursePrerequisite_prereq_course_Course", fields: [prereq_course_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("courses_courseprerequisite")
+}
+
+model ProgramCourse {
+  id BigInt @id @default(autoincrement())
+  program_id BigInt
+  program Program @relation("ProgramCourse_program_Program", fields: [program_id], references: [id])
+  course_id BigInt
+  course Course @relation("ProgramCourse_course_Course", fields: [course_id], references: [id])
+  term_number Int
+  is_mandatory Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("courses_programcourse")
+}
+
+model SyllabusTopic {
+  id BigInt @id @default(autoincrement())
+  course_id BigInt
+  course Course @relation("SyllabusTopic_course_Course", fields: [course_id], references: [id])
+  unit_number Int
+  title String
+  description String @default("")
+  expected_hours Decimal?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("courses_syllabustopic")
+}
+
+model TeachingAssignment {
+  id BigInt @id @default(autoincrement())
+  offering_id BigInt
+  offering CourseOffering @relation("TeachingAssignment_offering_CourseOffering", fields: [offering_id], references: [id])
+  employee_id BigInt
+  employee Employee @relation("TeachingAssignment_employee_Employee", fields: [employee_id], references: [id])
+  role String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("courses_teachingassignment")
+}
+
+model Designation {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  category String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  employee_designation_set Employee[] @relation("Employee_designation_Designation")
+  leavepolicy_designation_set LeavePolicy[] @relation("LeavePolicy_designation_Designation")
+  jobopening_designation_set JobOpening[] @relation("JobOpening_designation_Designation")
+  @@map("employees_designation")
+}
+
+model Employee {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt @unique
+  user User @relation("Employee_user_User", fields: [user_id], references: [id])
+  employee_no String @unique
+  department_id BigInt?
+  department Department? @relation("Employee_department_Department", fields: [department_id], references: [id])
+  designation_id BigInt
+  designation Designation @relation("Employee_designation_Designation", fields: [designation_id], references: [id])
+  reports_to_id BigInt?
+  reports_to Employee? @relation("Employee_reports_to_Employee", fields: [reports_to_id], references: [id])
+  employment_type String
+  joining_date DateTime
+  confirmation_date DateTime?
+  exit_date DateTime?
+  status String
+  pan_no String @default("")
+  aadhaar_no String @default("")
+  pf_no String @default("")
+  uan_no String @default("")
+  bank_account_no String @default("")
+  bank_ifsc String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  section_class_teacher_set Section[] @relation("Section_class_teacher_Employee")
+  courseoffering_primary_teacher_set CourseOffering[] @relation("CourseOffering_primary_teacher_Employee")
+  teachingassignment_employee_set TeachingAssignment[] @relation("TeachingAssignment_employee_Employee")
+  employee_reports_to_set Employee[] @relation("Employee_reports_to_Employee")
+  qualification_employee_set Qualification[] @relation("Qualification_employee_Employee")
+  workexperience_employee_set WorkExperience[] @relation("WorkExperience_employee_Employee")
+  payment_received_by_set Payment[] @relation("Payment_received_by_Employee")
+  studentscholarship_approved_by_set StudentScholarship[] @relation("StudentScholarship_approved_by_Employee")
+  hostel_warden_set Hostel[] @relation("Hostel_warden_Employee")
+  hostelleave_approved_by_set HostelLeave[] @relation("HostelLeave_approved_by_Employee")
+  leavebalance_employee_set LeaveBalance[] @relation("LeaveBalance_employee_Employee")
+  leaveapplication_employee_set LeaveApplication[] @relation("LeaveApplication_employee_Employee")
+  leaveapplication_approved_by_set LeaveApplication[] @relation("LeaveApplication_approved_by_Employee")
+  employeeattendance_employee_set EmployeeAttendance[] @relation("EmployeeAttendance_employee_Employee")
+  coursematerial_uploaded_by_set CourseMaterial[] @relation("CourseMaterial_uploaded_by_Employee")
+  assignmentsubmission_graded_by_set AssignmentSubmission[] @relation("AssignmentSubmission_graded_by_Employee")
+  school_dean_set School[] @relation("School_dean_Employee")
+  department_hod_set Department[] @relation("Department_hod_Employee")
+  employeesalaryassignment_employee_set EmployeeSalaryAssignment[] @relation("EmployeeSalaryAssignment_employee_Employee")
+  payslip_employee_set Payslip[] @relation("Payslip_employee_Employee")
+  recruitmentinterview_interviewer_set RecruitmentInterview[] @relation("RecruitmentInterview_interviewer_Employee")
+  attendancesession_taken_by_set AttendanceSession[] @relation("AttendanceSession_taken_by_Employee")
+  timetableentry_teacher_set TimetableEntry[] @relation("TimetableEntry_teacher_Employee")
+  @@map("employees_employee")
+}
+
+model Qualification {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("Qualification_employee_Employee", fields: [employee_id], references: [id])
+  degree String
+  institution String
+  year Int?
+  percentage Decimal?
+  specialization String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("employees_qualification")
+}
+
+model WorkExperience {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("WorkExperience_employee_Employee", fields: [employee_id], references: [id])
+  company String
+  role String
+  start_date DateTime?
+  end_date DateTime?
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("employees_workexperience")
+}
+
+model Exam {
+  id BigInt @id @default(autoincrement())
+  term_id BigInt
+  term AcademicTerm @relation("Exam_term_AcademicTerm", fields: [term_id], references: [id])
+  exam_type_id BigInt
+  exam_type ExamType @relation("Exam_exam_type_ExamType", fields: [exam_type_id], references: [id])
+  name String
+  start_date DateTime?
+  end_date DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  examschedule_exam_set ExamSchedule[] @relation("ExamSchedule_exam_Exam")
+  @@map("exams_exam")
+}
+
+model ExamSchedule {
+  id BigInt @id @default(autoincrement())
+  exam_id BigInt
+  exam Exam @relation("ExamSchedule_exam_Exam", fields: [exam_id], references: [id])
+  offering_id BigInt
+  offering CourseOffering @relation("ExamSchedule_offering_CourseOffering", fields: [offering_id], references: [id])
+  date DateTime
+  start_time DateTime
+  end_time DateTime
+  room_id BigInt?
+  room Room? @relation("ExamSchedule_room_Room", fields: [room_id], references: [id])
+  max_marks Decimal
+  min_passing Decimal
+  weight Decimal
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentmark_schedule_set StudentMark[] @relation("StudentMark_schedule_ExamSchedule")
+  @@map("exams_examschedule")
+}
+
+model ExamType {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  exam_exam_type_set Exam[] @relation("Exam_exam_type_ExamType")
+  @@map("exams_examtype")
+}
+
+model StudentCourseResult {
+  id BigInt @id @default(autoincrement())
+  enrollment_id BigInt @unique
+  enrollment StudentEnrollment @relation("StudentCourseResult_enrollment_StudentEnrollment", fields: [enrollment_id], references: [id])
+  total_percentage Decimal
+  grade_band_id BigInt?
+  grade_band GradeBand? @relation("StudentCourseResult_grade_band_GradeBand", fields: [grade_band_id], references: [id])
+  grade_letter String @default("")
+  grade_points Decimal?
+  credits_earned Decimal @default(0)
+  finalized_on DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("exams_studentcourseresult")
+}
+
+model StudentCumulativeResult {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt @unique
+  student Student @relation("StudentCumulativeResult_student_Student", fields: [student_id], references: [id])
+  cgpa Decimal?
+  percentage Decimal?
+  total_credits_earned Decimal @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("exams_studentcumulativeresult")
+}
+
+model StudentMark {
+  id BigInt @id @default(autoincrement())
+  schedule_id BigInt
+  schedule ExamSchedule @relation("StudentMark_schedule_ExamSchedule", fields: [schedule_id], references: [id])
+  student_id BigInt
+  student Student @relation("StudentMark_student_Student", fields: [student_id], references: [id])
+  marks_obtained Decimal?
+  is_absent Boolean @default(false)
+  remarks String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("exams_studentmark")
+}
+
+model StudentTermResult {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("StudentTermResult_student_Student", fields: [student_id], references: [id])
+  term_id BigInt
+  term AcademicTerm @relation("StudentTermResult_term_AcademicTerm", fields: [term_id], references: [id])
+  sgpa Decimal?
+  total_credits Decimal @default(0)
+  percentage Decimal?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("exams_studenttermresult")
+}
+
+model FeeCategory {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  feehead_category_set FeeHead[] @relation("FeeHead_category_FeeCategory")
+  @@map("fees_feecategory")
+}
+
+model FeeHead {
+  id BigInt @id @default(autoincrement())
+  category_id BigInt
+  category FeeCategory @relation("FeeHead_category_FeeCategory", fields: [category_id], references: [id])
+  name String
+  code String @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  feestructureitem_fee_head_set FeeStructureItem[] @relation("FeeStructureItem_fee_head_FeeHead")
+  feeinvoiceline_fee_head_set FeeInvoiceLine[] @relation("FeeInvoiceLine_fee_head_FeeHead")
+  @@map("fees_feehead")
+}
+
+model FeeInvoice {
+  id BigInt @id @default(autoincrement())
+  invoice_no String @unique
+  student_id BigInt
+  student Student @relation("FeeInvoice_student_Student", fields: [student_id], references: [id])
+  term_id BigInt
+  term AcademicTerm @relation("FeeInvoice_term_AcademicTerm", fields: [term_id], references: [id])
+  issue_date DateTime
+  due_date DateTime
+  total_amount Decimal @default(0)
+  discount_amount Decimal @default(0)
+  paid_amount Decimal @default(0)
+  balance_amount Decimal @default(0)
+  status String
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("FeeInvoice_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  feeinvoiceline_invoice_set FeeInvoiceLine[] @relation("FeeInvoiceLine_invoice_FeeInvoice")
+  payment_invoice_set Payment[] @relation("Payment_invoice_FeeInvoice")
+  @@map("fees_feeinvoice")
+}
+
+model FeeInvoiceLine {
+  id BigInt @id @default(autoincrement())
+  invoice_id BigInt
+  invoice FeeInvoice @relation("FeeInvoiceLine_invoice_FeeInvoice", fields: [invoice_id], references: [id])
+  fee_head_id BigInt
+  fee_head FeeHead @relation("FeeInvoiceLine_fee_head_FeeHead", fields: [fee_head_id], references: [id])
+  amount Decimal
+  discount Decimal @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("fees_feeinvoiceline")
+}
+
+model FeeStructure {
+  id BigInt @id @default(autoincrement())
+  program_id BigInt
+  program Program @relation("FeeStructure_program_Program", fields: [program_id], references: [id])
+  batch_id BigInt?
+  batch Batch? @relation("FeeStructure_batch_Batch", fields: [batch_id], references: [id])
+  term_id BigInt?
+  term AcademicTerm? @relation("FeeStructure_term_AcademicTerm", fields: [term_id], references: [id])
+  name String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  feestructureitem_structure_set FeeStructureItem[] @relation("FeeStructureItem_structure_FeeStructure")
+  @@map("fees_feestructure")
+}
+
+model FeeStructureItem {
+  id BigInt @id @default(autoincrement())
+  structure_id BigInt
+  structure FeeStructure @relation("FeeStructureItem_structure_FeeStructure", fields: [structure_id], references: [id])
+  fee_head_id BigInt
+  fee_head FeeHead @relation("FeeStructureItem_fee_head_FeeHead", fields: [fee_head_id], references: [id])
+  amount Decimal
+  is_refundable Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("fees_feestructureitem")
+}
+
+model Payment {
+  id BigInt @id @default(autoincrement())
+  payment_no String @unique
+  invoice_id BigInt
+  invoice FeeInvoice @relation("Payment_invoice_FeeInvoice", fields: [invoice_id], references: [id])
+  amount Decimal
+  paid_on DateTime
+  mode String
+  txn_reference String @default("")
+  status String
+  received_by_id BigInt?
+  received_by Employee? @relation("Payment_received_by_Employee", fields: [received_by_id], references: [id])
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("Payment_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  refund_payment_set Refund[] @relation("Refund_payment_Payment")
+  @@map("fees_payment")
+}
+
+model Refund {
+  id BigInt @id @default(autoincrement())
+  payment_id BigInt
+  payment Payment @relation("Refund_payment_Payment", fields: [payment_id], references: [id])
+  amount Decimal
+  reason String @default("")
+  refunded_on DateTime?
+  status String @default("pending")
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("Refund_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("fees_refund")
+}
+
+model Scholarship {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  discount_type String
+  value Decimal
+  source String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentscholarship_scholarship_set StudentScholarship[] @relation("StudentScholarship_scholarship_Scholarship")
+  @@map("fees_scholarship")
+}
+
+model StudentScholarship {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("StudentScholarship_student_Student", fields: [student_id], references: [id])
+  scholarship_id BigInt
+  scholarship Scholarship @relation("StudentScholarship_scholarship_Scholarship", fields: [scholarship_id], references: [id])
+  effective_from DateTime
+  effective_to DateTime?
+  approved_by_id BigInt?
+  approved_by Employee? @relation("StudentScholarship_approved_by_Employee", fields: [approved_by_id], references: [id])
+  status String @default("active")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("fees_studentscholarship")
+}
+
+model GradeBand {
+  id BigInt @id @default(autoincrement())
+  scheme_id BigInt
+  scheme GradingScheme @relation("GradeBand_scheme_GradingScheme", fields: [scheme_id], references: [id])
+  band_code String
+  min_percentage Decimal
+  max_percentage Decimal
+  grade_points Decimal?
+  is_pass Boolean @default(true)
+  sort_order Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentcourseresult_grade_band_set StudentCourseResult[] @relation("StudentCourseResult_grade_band_GradeBand")
+  @@map("grading_gradeband")
+}
+
+model GradeConversionRule {
+  id BigInt @id @default(autoincrement())
+  from_scheme_id BigInt
+  from_scheme GradingScheme @relation("GradeConversionRule_from_scheme_GradingScheme", fields: [from_scheme_id], references: [id])
+  to_scheme_id BigInt
+  to_scheme GradingScheme @relation("GradeConversionRule_to_scheme_GradingScheme", fields: [to_scheme_id], references: [id])
+  formula String
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("grading_gradeconversionrule")
+}
+
+model GradingScheme {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  scheme_type String
+  max_grade_points Decimal?
+  pass_threshold Decimal
+  description String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  program_grading_scheme_set Program[] @relation("Program_grading_scheme_GradingScheme")
+  gradeband_scheme_set GradeBand[] @relation("GradeBand_scheme_GradingScheme")
+  gradeconversionrule_from_scheme_set GradeConversionRule[] @relation("GradeConversionRule_from_scheme_GradingScheme")
+  gradeconversionrule_to_scheme_set GradeConversionRule[] @relation("GradeConversionRule_to_scheme_GradingScheme")
+  @@map("grading_gradingscheme")
+}
+
+model Hostel {
+  id BigInt @id @default(autoincrement())
+  name String
+  code String @unique
+  campus_id BigInt
+  campus Campus @relation("Hostel_campus_Campus", fields: [campus_id], references: [id])
+  hostel_type String
+  warden_id BigInt?
+  warden Employee? @relation("Hostel_warden_Employee", fields: [warden_id], references: [id])
+  total_capacity Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  hostelblock_hostel_set HostelBlock[] @relation("HostelBlock_hostel_Hostel")
+  hostelapplication_preferred_hostel_set HostelApplication[] @relation("HostelApplication_preferred_hostel_Hostel")
+  mess_hostel_set Mess[] @relation("Mess_hostel_Hostel")
+  @@map("hostel_hostel")
+}
+
+model HostelApplication {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("HostelApplication_student_Student", fields: [student_id], references: [id])
+  preferred_hostel_id BigInt?
+  preferred_hostel Hostel? @relation("HostelApplication_preferred_hostel_Hostel", fields: [preferred_hostel_id], references: [id])
+  applied_on DateTime
+  academic_year_id BigInt
+  academic_year AcademicYear @relation("HostelApplication_academic_year_AcademicYear", fields: [academic_year_id], references: [id])
+  status String @default("submitted")
+  remarks String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("hostel_hostelapplication")
+}
+
+model HostelBlock {
+  id BigInt @id @default(autoincrement())
+  hostel_id BigInt
+  hostel Hostel @relation("HostelBlock_hostel_Hostel", fields: [hostel_id], references: [id])
+  name String
+  total_floors Int @default(1)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  hostelfloor_block_set HostelFloor[] @relation("HostelFloor_block_HostelBlock")
+  @@map("hostel_hostelblock")
+}
+
+model HostelFloor {
+  id BigInt @id @default(autoincrement())
+  block_id BigInt
+  block HostelBlock @relation("HostelFloor_block_HostelBlock", fields: [block_id], references: [id])
+  floor_number Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  hostelroom_floor_set HostelRoom[] @relation("HostelRoom_floor_HostelFloor")
+  @@map("hostel_hostelfloor")
+}
+
+model HostelLeave {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("HostelLeave_student_Student", fields: [student_id], references: [id])
+  from_date DateTime
+  to_date DateTime
+  destination String @default("")
+  reason String @default("")
+  status String
+  approved_by_id BigInt?
+  approved_by Employee? @relation("HostelLeave_approved_by_Employee", fields: [approved_by_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("hostel_hostelleave")
+}
+
+model HostelRoom {
+  id BigInt @id @default(autoincrement())
+  floor_id BigInt
+  floor HostelFloor @relation("HostelRoom_floor_HostelFloor", fields: [floor_id], references: [id])
+  room_no String
+  occupancy_type String
+  capacity Int
+  monthly_rent Decimal @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  roomallocation_room_set RoomAllocation[] @relation("RoomAllocation_room_HostelRoom")
+  @@map("hostel_hostelroom")
+}
+
+model HostelVisitor {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("HostelVisitor_student_Student", fields: [student_id], references: [id])
+  visitor_name String
+  relation String @default("")
+  phone String @default("")
+  id_proof String @default("")
+  in_time DateTime
+  out_time DateTime?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("hostel_hostelvisitor")
+}
+
+model Mess {
+  id BigInt @id @default(autoincrement())
+  hostel_id BigInt
+  hostel Hostel @relation("Mess_hostel_Hostel", fields: [hostel_id], references: [id])
+  name String
+  monthly_charge Decimal @default(0)
+  contractor String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  messmenu_mess_set MessMenu[] @relation("MessMenu_mess_Mess")
+  messbill_mess_set MessBill[] @relation("MessBill_mess_Mess")
+  @@map("hostel_mess")
+}
+
+model MessBill {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("MessBill_student_Student", fields: [student_id], references: [id])
+  mess_id BigInt
+  mess Mess @relation("MessBill_mess_Mess", fields: [mess_id], references: [id])
+  period_start DateTime
+  period_end DateTime
+  amount Decimal
+  paid Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("hostel_messbill")
+}
+
+model MessMenu {
+  id BigInt @id @default(autoincrement())
+  mess_id BigInt
+  mess Mess @relation("MessMenu_mess_Mess", fields: [mess_id], references: [id])
+  day_of_week Int
+  meal_type String
+  items String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@unique([day_of_week, meal_type])
+  @@map("hostel_messmenu")
+}
+
+model RoomAllocation {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("RoomAllocation_student_Student", fields: [student_id], references: [id])
+  room_id BigInt
+  room HostelRoom @relation("RoomAllocation_room_HostelRoom", fields: [room_id], references: [id])
+  allocated_from DateTime
+  allocated_to DateTime?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("hostel_roomallocation")
+}
+
+model EmployeeAttendance {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("EmployeeAttendance_employee_Employee", fields: [employee_id], references: [id])
+  date DateTime
+  shift_id BigInt?
+  shift Shift? @relation("EmployeeAttendance_shift_Shift", fields: [shift_id], references: [id])
+  check_in DateTime?
+  check_out DateTime?
+  status String
+  source String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("leaves_employeeattendance")
+}
+
+model Holiday {
+  id BigInt @id @default(autoincrement())
+  holiday_list_id BigInt
+  holiday_list HolidayList @relation("Holiday_holiday_list_HolidayList", fields: [holiday_list_id], references: [id])
+  date DateTime
+  name String
+  is_optional Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("leaves_holiday")
+}
+
+model HolidayList {
+  id BigInt @id @default(autoincrement())
+  name String
+  academic_year_id BigInt
+  academic_year AcademicYear @relation("HolidayList_academic_year_AcademicYear", fields: [academic_year_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  holiday_holiday_list_set Holiday[] @relation("Holiday_holiday_list_HolidayList")
+  @@map("leaves_holidaylist")
+}
+
+model LeaveApplication {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("LeaveApplication_employee_Employee", fields: [employee_id], references: [id])
+  leave_type_id BigInt
+  leave_type LeaveType @relation("LeaveApplication_leave_type_LeaveType", fields: [leave_type_id], references: [id])
+  from_date DateTime
+  to_date DateTime
+  half_day Boolean @default(false)
+  reason String @default("")
+  status String
+  approved_by_id BigInt?
+  approved_by Employee? @relation("LeaveApplication_approved_by_Employee", fields: [approved_by_id], references: [id])
+  approved_on DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("leaves_leaveapplication")
+}
+
+model LeaveBalance {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("LeaveBalance_employee_Employee", fields: [employee_id], references: [id])
+  leave_type_id BigInt
+  leave_type LeaveType @relation("LeaveBalance_leave_type_LeaveType", fields: [leave_type_id], references: [id])
+  year Int
+  balance Decimal
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("leaves_leavebalance")
+}
+
+model LeavePolicy {
+  id BigInt @id @default(autoincrement())
+  leave_type_id BigInt
+  leave_type LeaveType @relation("LeavePolicy_leave_type_LeaveType", fields: [leave_type_id], references: [id])
+  designation_id BigInt?
+  designation Designation? @relation("LeavePolicy_designation_Designation", fields: [designation_id], references: [id])
+  employment_type String @default("")
+  annual_quota Decimal
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("leaves_leavepolicy")
+}
+
+model LeaveType {
+  id BigInt @id @default(autoincrement())
+  code String @unique
+  name String
+  is_paid Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  leavepolicy_leave_type_set LeavePolicy[] @relation("LeavePolicy_leave_type_LeaveType")
+  leavebalance_leave_type_set LeaveBalance[] @relation("LeaveBalance_leave_type_LeaveType")
+  leaveapplication_leave_type_set LeaveApplication[] @relation("LeaveApplication_leave_type_LeaveType")
+  @@map("leaves_leavetype")
+}
+
+model Shift {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  start_time DateTime
+  end_time DateTime
+  grace_minutes Int @default(10)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  employeeattendance_shift_set EmployeeAttendance[] @relation("EmployeeAttendance_shift_Shift")
+  @@map("leaves_shift")
+}
+
+model Author {
+  id BigInt @id @default(autoincrement())
+  name String
+  bio String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  book_authors_set Book[] @relation("Book_authors_Author")
+  bookauthor_author_set BookAuthor[] @relation("BookAuthor_author_Author")
+  @@map("library_author")
+}
+
+model Book {
+  id BigInt @id @default(autoincrement())
+  isbn String @unique
+  title String
+  subtitle String @default("")
+  publisher_id BigInt?
+  publisher Publisher? @relation("Book_publisher_Publisher", fields: [publisher_id], references: [id])
+  category_id BigInt?
+  category BookCategory? @relation("Book_category_BookCategory", fields: [category_id], references: [id])
+  edition String @default("")
+  year_of_publication Int?
+  language String @default("")
+  authors Author[] @relation("Book_authors_Author")
+  cover_image String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  bookauthor_book_set BookAuthor[] @relation("BookAuthor_book_Book")
+  bookcopy_book_set BookCopy[] @relation("BookCopy_book_Book")
+  bookreservation_book_set BookReservation[] @relation("BookReservation_book_Book")
+  @@map("library_book")
+}
+
+model BookAuthor {
+  id BigInt @id @default(autoincrement())
+  book_id BigInt
+  book Book @relation("BookAuthor_book_Book", fields: [book_id], references: [id])
+  author_id BigInt
+  author Author @relation("BookAuthor_author_Author", fields: [author_id], references: [id])
+  author_order Int @default(1)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("library_bookauthor")
+}
+
+model BookCategory {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  book_category_set Book[] @relation("Book_category_BookCategory")
+  @@map("library_bookcategory")
+}
+
+model BookCopy {
+  id BigInt @id @default(autoincrement())
+  book_id BigInt
+  book Book @relation("BookCopy_book_Book", fields: [book_id], references: [id])
+  accession_no String @unique
+  barcode String @default("")
+  shelf_location String @default("")
+  status String
+  price Decimal?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  bookissue_copy_set BookIssue[] @relation("BookIssue_copy_BookCopy")
+  @@map("library_bookcopy")
+}
+
+model BookIssue {
+  id BigInt @id @default(autoincrement())
+  copy_id BigInt
+  copy BookCopy @relation("BookIssue_copy_BookCopy", fields: [copy_id], references: [id])
+  member_id BigInt
+  member LibraryMember @relation("BookIssue_member_LibraryMember", fields: [member_id], references: [id])
+  issue_date DateTime
+  due_date DateTime
+  return_date DateTime?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  libraryfine_issue_set LibraryFine[] @relation("LibraryFine_issue_BookIssue")
+  @@map("library_bookissue")
+}
+
+model BookReservation {
+  id BigInt @id @default(autoincrement())
+  book_id BigInt
+  book Book @relation("BookReservation_book_Book", fields: [book_id], references: [id])
+  member_id BigInt
+  member LibraryMember @relation("BookReservation_member_LibraryMember", fields: [member_id], references: [id])
+  reserved_on DateTime
+  fulfilled_on DateTime?
+  status String @default("pending")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("library_bookreservation")
+}
+
+model LibraryFine {
+  id BigInt @id @default(autoincrement())
+  issue_id BigInt
+  issue BookIssue @relation("LibraryFine_issue_BookIssue", fields: [issue_id], references: [id])
+  amount Decimal
+  reason String @default("")
+  paid Boolean @default(false)
+  paid_on DateTime?
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("LibraryFine_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("library_libraryfine")
+}
+
+model LibraryMember {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt @unique
+  user User @relation("LibraryMember_user_User", fields: [user_id], references: [id])
+  member_type String
+  membership_id String @unique
+  valid_from DateTime
+  valid_until DateTime?
+  max_books_allowed Int @default(3)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  bookissue_member_set BookIssue[] @relation("BookIssue_member_LibraryMember")
+  bookreservation_member_set BookReservation[] @relation("BookReservation_member_LibraryMember")
+  @@map("library_librarymember")
+}
+
+model Publisher {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  book_publisher_set Book[] @relation("Book_publisher_Publisher")
+  @@map("library_publisher")
+}
+
+model Assignment {
+  id BigInt @id @default(autoincrement())
+  offering_id BigInt
+  offering CourseOffering @relation("Assignment_offering_CourseOffering", fields: [offering_id], references: [id])
+  title String
+  description String @default("")
+  max_marks Decimal @default(100)
+  published_at DateTime?
+  due_at DateTime
+  allow_late_submission Boolean @default(false)
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  assignmentsubmission_assignment_set AssignmentSubmission[] @relation("AssignmentSubmission_assignment_Assignment")
+  @@map("lms_assignment")
+}
+
+model AssignmentSubmission {
+  id BigInt @id @default(autoincrement())
+  assignment_id BigInt
+  assignment Assignment @relation("AssignmentSubmission_assignment_Assignment", fields: [assignment_id], references: [id])
+  student_id BigInt
+  student Student @relation("AssignmentSubmission_student_Student", fields: [student_id], references: [id])
+  submitted_at DateTime
+  file String?
+  text_answer String @default("")
+  marks Decimal?
+  feedback String @default("")
+  status String
+  graded_by_id BigInt?
+  graded_by Employee? @relation("AssignmentSubmission_graded_by_Employee", fields: [graded_by_id], references: [id])
+  graded_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("lms_assignmentsubmission")
+}
+
+model CourseMaterial {
+  id BigInt @id @default(autoincrement())
+  offering_id BigInt
+  offering CourseOffering @relation("CourseMaterial_offering_CourseOffering", fields: [offering_id], references: [id])
+  title String
+  material_type String
+  file String?
+  external_url String @default("")
+  description String @default("")
+  uploaded_by_id BigInt?
+  uploaded_by Employee? @relation("CourseMaterial_uploaded_by_Employee", fields: [uploaded_by_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("lms_coursematerial")
+}
+
+model Question {
+  id BigInt @id @default(autoincrement())
+  quiz_id BigInt
+  quiz Quiz @relation("Question_quiz_Quiz", fields: [quiz_id], references: [id])
+  text String
+  question_type String
+  marks Decimal @default(1)
+  order Int @default(1)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  questionoption_question_set QuestionOption[] @relation("QuestionOption_question_Question")
+  quizanswer_question_set QuizAnswer[] @relation("QuizAnswer_question_Question")
+  @@map("lms_question")
+}
+
+model QuestionOption {
+  id BigInt @id @default(autoincrement())
+  question_id BigInt
+  question Question @relation("QuestionOption_question_Question", fields: [question_id], references: [id])
+  text String
+  is_correct Boolean @default(false)
+  order Int @default(1)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  quizanswer_selected_options_set QuizAnswer[] @relation("QuizAnswer_selected_options_QuestionOption")
+  @@map("lms_questionoption")
+}
+
+model Quiz {
+  id BigInt @id @default(autoincrement())
+  offering_id BigInt
+  offering CourseOffering @relation("Quiz_offering_CourseOffering", fields: [offering_id], references: [id])
+  title String
+  description String @default("")
+  duration_minutes Int @default(30)
+  max_attempts Int @default(1)
+  start_at DateTime?
+  end_at DateTime?
+  is_published Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  question_quiz_set Question[] @relation("Question_quiz_Quiz")
+  quizattempt_quiz_set QuizAttempt[] @relation("QuizAttempt_quiz_Quiz")
+  @@map("lms_quiz")
+}
+
+model QuizAnswer {
+  id BigInt @id @default(autoincrement())
+  attempt_id BigInt
+  attempt QuizAttempt @relation("QuizAnswer_attempt_QuizAttempt", fields: [attempt_id], references: [id])
+  question_id BigInt
+  question Question @relation("QuizAnswer_question_Question", fields: [question_id], references: [id])
+  selected_options QuestionOption[] @relation("QuizAnswer_selected_options_QuestionOption")
+  text_answer String @default("")
+  awarded_marks Decimal?
+  is_correct Boolean?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("lms_quizanswer")
+}
+
+model QuizAttempt {
+  id BigInt @id @default(autoincrement())
+  quiz_id BigInt
+  quiz Quiz @relation("QuizAttempt_quiz_Quiz", fields: [quiz_id], references: [id])
+  student_id BigInt
+  student Student @relation("QuizAttempt_student_Student", fields: [student_id], references: [id])
+  started_at DateTime
+  submitted_at DateTime?
+  score Decimal?
+  attempt_no Int @default(1)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  quizanswer_attempt_set QuizAnswer[] @relation("QuizAnswer_attempt_QuizAttempt")
+  @@map("lms_quizattempt")
+}
+
+model Campus {
+  id BigInt @id @default(autoincrement())
+  institute_id BigInt
+  institute Institute @relation("Campus_institute_Institute", fields: [institute_id], references: [id])
+  name String
+  code String
+  address_id BigInt?
+  address Address? @relation("Campus_address_Address", fields: [address_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  hostel_campus_set Hostel[] @relation("Hostel_campus_Campus")
+  school_campus_set School[] @relation("School_campus_Campus")
+  room_campus_set Room[] @relation("Room_campus_Campus")
+  @@map("organization_campus")
+}
+
+model Department {
+  id BigInt @id @default(autoincrement())
+  school_id BigInt
+  school School @relation("Department_school_School", fields: [school_id], references: [id])
+  name String
+  code String
+  hod_id BigInt?
+  hod Employee? @relation("Department_hod_Employee", fields: [hod_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  program_department_set Program[] @relation("Program_department_Department")
+  announcement_department_set Announcement[] @relation("Announcement_department_Department")
+  course_department_set Course[] @relation("Course_department_Department")
+  employee_department_set Employee[] @relation("Employee_department_Department")
+  jobopening_department_set JobOpening[] @relation("JobOpening_department_Department")
+  @@map("organization_department")
+}
+
+model Institute {
+  id BigInt @id @default(autoincrement())
+  name String
+  short_code String @unique
+  established_on DateTime?
+  logo String?
+  website String @default("")
+  email String @default("")
+  phone String @default("")
+  address_id BigInt?
+  address Address? @relation("Institute_address_Address", fields: [address_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  campus_institute_set Campus[] @relation("Campus_institute_Institute")
+  @@map("organization_institute")
+}
+
+model School {
+  id BigInt @id @default(autoincrement())
+  campus_id BigInt
+  campus Campus @relation("School_campus_Campus", fields: [campus_id], references: [id])
+  name String
+  code String
+  dean_id BigInt?
+  dean Employee? @relation("School_dean_Employee", fields: [dean_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  department_school_set Department[] @relation("Department_school_School")
+  @@map("organization_school")
+}
+
+model EmployeeSalaryAssignment {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("EmployeeSalaryAssignment_employee_Employee", fields: [employee_id], references: [id])
+  structure_id BigInt
+  structure SalaryStructure @relation("EmployeeSalaryAssignment_structure_SalaryStructure", fields: [structure_id], references: [id])
+  effective_from DateTime
+  effective_to DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("payroll_employeesalaryassignment")
+}
+
+model Payslip {
+  id BigInt @id @default(autoincrement())
+  employee_id BigInt
+  employee Employee @relation("Payslip_employee_Employee", fields: [employee_id], references: [id])
+  period_start DateTime
+  period_end DateTime
+  gross_earnings Decimal @default(0)
+  total_deductions Decimal @default(0)
+  net_pay Decimal @default(0)
+  status String
+  paid_on DateTime?
+  journal_entry_id BigInt?
+  journal_entry JournalEntry? @relation("Payslip_journal_entry_JournalEntry", fields: [journal_entry_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  payslipline_payslip_set PayslipLine[] @relation("PayslipLine_payslip_Payslip")
+  @@unique([period_start, period_end])
+  @@map("payroll_payslip")
+}
+
+model PayslipLine {
+  id BigInt @id @default(autoincrement())
+  payslip_id BigInt
+  payslip Payslip @relation("PayslipLine_payslip_Payslip", fields: [payslip_id], references: [id])
+  component_id BigInt
+  component SalaryComponent @relation("PayslipLine_component_SalaryComponent", fields: [component_id], references: [id])
+  amount Decimal
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("payroll_payslipline")
+}
+
+model SalaryComponent {
+  id BigInt @id @default(autoincrement())
+  code String @unique
+  name String
+  component_type String
+  is_taxable Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  salarystructurecomponent_component_set SalaryStructureComponent[] @relation("SalaryStructureComponent_component_SalaryComponent")
+  salarystructurecomponent_percentage_of_set SalaryStructureComponent[] @relation("SalaryStructureComponent_percentage_of_SalaryComponent")
+  payslipline_component_set PayslipLine[] @relation("PayslipLine_component_SalaryComponent")
+  @@map("payroll_salarycomponent")
+}
+
+model SalaryStructure {
+  id BigInt @id @default(autoincrement())
+  name String
+  effective_from DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  salarystructurecomponent_structure_set SalaryStructureComponent[] @relation("SalaryStructureComponent_structure_SalaryStructure")
+  employeesalaryassignment_structure_set EmployeeSalaryAssignment[] @relation("EmployeeSalaryAssignment_structure_SalaryStructure")
+  @@map("payroll_salarystructure")
+}
+
+model SalaryStructureComponent {
+  id BigInt @id @default(autoincrement())
+  structure_id BigInt
+  structure SalaryStructure @relation("SalaryStructureComponent_structure_SalaryStructure", fields: [structure_id], references: [id])
+  component_id BigInt
+  component SalaryComponent @relation("SalaryStructureComponent_component_SalaryComponent", fields: [component_id], references: [id])
+  amount Decimal?
+  percentage_of_id BigInt?
+  percentage_of SalaryComponent? @relation("SalaryStructureComponent_percentage_of_SalaryComponent", fields: [percentage_of_id], references: [id])
+  percentage Decimal?
+  formula String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("payroll_salarystructurecomponent")
+}
+
+model Company {
+  id BigInt @id @default(autoincrement())
+  name String @unique
+  website String @default("")
+  industry String @default("")
+  hq_location String @default("")
+  contact_name String @default("")
+  contact_email String @default("")
+  contact_phone String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  placementdrive_company_set PlacementDrive[] @relation("PlacementDrive_company_Company")
+  @@map("placements_company")
+}
+
+model JobPosting {
+  id BigInt @id @default(autoincrement())
+  drive_id BigInt
+  drive PlacementDrive @relation("JobPosting_drive_PlacementDrive", fields: [drive_id], references: [id])
+  title String
+  description String @default("")
+  role_type String
+  ctc Decimal?
+  stipend Decimal?
+  location String @default("")
+  min_cgpa Decimal?
+  eligible_programs Program[] @relation("JobPosting_eligible_programs_Program")
+  apply_by DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  placementapplication_posting_set PlacementApplication[] @relation("PlacementApplication_posting_JobPosting")
+  placementinterviewround_posting_set PlacementInterviewRound[] @relation("PlacementInterviewRound_posting_JobPosting")
+  @@map("placements_jobposting")
+}
+
+model PlacementApplication {
+  id BigInt @id @default(autoincrement())
+  posting_id BigInt
+  posting JobPosting @relation("PlacementApplication_posting_JobPosting", fields: [posting_id], references: [id])
+  student_id BigInt
+  student Student @relation("PlacementApplication_student_Student", fields: [student_id], references: [id])
+  applied_on DateTime
+  resume String?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  placementinterviewresult_application_set PlacementInterviewResult[] @relation("PlacementInterviewResult_application_PlacementApplication")
+  placementoffer_application_set PlacementOffer[] @relation("PlacementOffer_application_PlacementApplication")
+  @@map("placements_placementapplication")
+}
+
+model PlacementDrive {
+  id BigInt @id @default(autoincrement())
+  company_id BigInt
+  company Company @relation("PlacementDrive_company_Company", fields: [company_id], references: [id])
+  academic_year_id BigInt
+  academic_year AcademicYear @relation("PlacementDrive_academic_year_AcademicYear", fields: [academic_year_id], references: [id])
+  name String
+  start_date DateTime
+  end_date DateTime?
+  eligibility_criteria String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  jobposting_drive_set JobPosting[] @relation("JobPosting_drive_PlacementDrive")
+  @@map("placements_placementdrive")
+}
+
+model PlacementInterviewResult {
+  id BigInt @id @default(autoincrement())
+  application_id BigInt
+  application PlacementApplication @relation("PlacementInterviewResult_application_PlacementApplication", fields: [application_id], references: [id])
+  round_id BigInt
+  round PlacementInterviewRound @relation("PlacementInterviewResult_round_PlacementInterviewRound", fields: [round_id], references: [id])
+  result String
+  remarks String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("placements_placementinterviewresult")
+}
+
+model PlacementInterviewRound {
+  id BigInt @id @default(autoincrement())
+  posting_id BigInt
+  posting JobPosting @relation("PlacementInterviewRound_posting_JobPosting", fields: [posting_id], references: [id])
+  round_no Int
+  name String
+  scheduled_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  placementinterviewresult_round_set PlacementInterviewResult[] @relation("PlacementInterviewResult_round_PlacementInterviewRound")
+  @@map("placements_placementinterviewround")
+}
+
+model PlacementOffer {
+  id BigInt @id @default(autoincrement())
+  application_id BigInt @unique
+  application PlacementApplication @relation("PlacementOffer_application_PlacementApplication", fields: [application_id], references: [id])
+  offered_on DateTime
+  ctc Decimal
+  joining_date DateTime?
+  offer_letter String?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("placements_placementoffer")
+}
+
+model JobApplicant {
+  id BigInt @id @default(autoincrement())
+  opening_id BigInt
+  opening JobOpening @relation("JobApplicant_opening_JobOpening", fields: [opening_id], references: [id])
+  first_name String
+  last_name String
+  email String
+  phone String @default("")
+  resume String?
+  years_of_experience Decimal?
+  current_ctc Decimal?
+  expected_ctc Decimal?
+  applied_on DateTime
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  recruitmentinterview_applicant_set RecruitmentInterview[] @relation("RecruitmentInterview_applicant_JobApplicant")
+  recruitmentoffer_applicant_set RecruitmentOffer[] @relation("RecruitmentOffer_applicant_JobApplicant")
+  @@map("recruitment_jobapplicant")
+}
+
+model JobOpening {
+  id BigInt @id @default(autoincrement())
+  title String
+  department_id BigInt
+  department Department @relation("JobOpening_department_Department", fields: [department_id], references: [id])
+  designation_id BigInt
+  designation Designation @relation("JobOpening_designation_Designation", fields: [designation_id], references: [id])
+  description String @default("")
+  vacancies Int @default(1)
+  min_experience_years Decimal @default(0)
+  opened_on DateTime
+  closing_on DateTime?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  jobapplicant_opening_set JobApplicant[] @relation("JobApplicant_opening_JobOpening")
+  @@map("recruitment_jobopening")
+}
+
+model RecruitmentInterview {
+  id BigInt @id @default(autoincrement())
+  applicant_id BigInt
+  applicant JobApplicant @relation("RecruitmentInterview_applicant_JobApplicant", fields: [applicant_id], references: [id])
+  round_no Int @default(1)
+  scheduled_at DateTime
+  interviewer_id BigInt?
+  interviewer Employee? @relation("RecruitmentInterview_interviewer_Employee", fields: [interviewer_id], references: [id])
+  feedback String @default("")
+  rating Int?
+  result String @default("pending")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("recruitment_recruitmentinterview")
+}
+
+model RecruitmentOffer {
+  id BigInt @id @default(autoincrement())
+  applicant_id BigInt @unique
+  applicant JobApplicant @relation("RecruitmentOffer_applicant_JobApplicant", fields: [applicant_id], references: [id])
+  offered_on DateTime
+  ctc Decimal
+  joining_date DateTime?
+  offer_letter String?
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("recruitment_recruitmentoffer")
+}
+
+model AttendanceSession {
+  id BigInt @id @default(autoincrement())
+  offering_id BigInt
+  offering CourseOffering @relation("AttendanceSession_offering_CourseOffering", fields: [offering_id], references: [id])
+  date DateTime
+  start_time DateTime
+  end_time DateTime
+  room_id BigInt?
+  room Room? @relation("AttendanceSession_room_Room", fields: [room_id], references: [id])
+  taken_by_id BigInt?
+  taken_by Employee? @relation("AttendanceSession_taken_by_Employee", fields: [taken_by_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentattendance_session_set StudentAttendance[] @relation("StudentAttendance_session_AttendanceSession")
+  @@unique([date, start_time])
+  @@map("student_attendance_attendancesession")
+}
+
+model StudentAttendance {
+  id BigInt @id @default(autoincrement())
+  session_id BigInt
+  session AttendanceSession @relation("StudentAttendance_session_AttendanceSession", fields: [session_id], references: [id])
+  student_id BigInt
+  student Student @relation("StudentAttendance_student_Student", fields: [student_id], references: [id])
+  status String
+  remarks String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("student_attendance_studentattendance")
+}
+
+model Application {
+  id BigInt @id @default(autoincrement())
+  application_no String @unique
+  program_id BigInt
+  program Program @relation("Application_program_Program", fields: [program_id], references: [id])
+  first_name String
+  last_name String
+  email String
+  phone String
+  date_of_birth DateTime?
+  gender String @default("")
+  previous_qualification String @default("")
+  previous_percentage Decimal?
+  entrance_exam String @default("")
+  entrance_score Decimal?
+  status String
+  applied_on DateTime
+  decision_on DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("students_application")
+}
+
+model Guardian {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt? @unique
+  user User? @relation("Guardian_user_User", fields: [user_id], references: [id])
+  name String
+  relation String
+  occupation String @default("")
+  annual_income Decimal?
+  phone String @default("")
+  email String @default("")
+  address_id BigInt?
+  address Address? @relation("Guardian_address_Address", fields: [address_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentguardian_guardian_set StudentGuardian[] @relation("StudentGuardian_guardian_Guardian")
+  @@map("students_guardian")
+}
+
+model Student {
+  id BigInt @id @default(autoincrement())
+  user_id BigInt @unique
+  user User @relation("Student_user_User", fields: [user_id], references: [id])
+  enrollment_no String @unique
+  roll_no String
+  program_id BigInt
+  program Program @relation("Student_program_Program", fields: [program_id], references: [id])
+  batch_id BigInt
+  batch Batch @relation("Student_batch_Batch", fields: [batch_id], references: [id])
+  current_term_id BigInt?
+  current_term AcademicTerm? @relation("Student_current_term_AcademicTerm", fields: [current_term_id], references: [id])
+  current_section_id BigInt?
+  current_section Section? @relation("Student_current_section_Section", fields: [current_section_id], references: [id])
+  admission_date DateTime
+  admission_type String
+  category String @default("")
+  religion String @default("")
+  nationality String @default("Indian")
+  blood_group String @default("")
+  aadhaar_no String @default("")
+  pan_no String @default("")
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  alumni_student_set Alumni[] @relation("Alumni_student_Student")
+  studentmark_student_set StudentMark[] @relation("StudentMark_student_Student")
+  studenttermresult_student_set StudentTermResult[] @relation("StudentTermResult_student_Student")
+  studentcumulativeresult_student_set StudentCumulativeResult[] @relation("StudentCumulativeResult_student_Student")
+  feeinvoice_student_set FeeInvoice[] @relation("FeeInvoice_student_Student")
+  studentscholarship_student_set StudentScholarship[] @relation("StudentScholarship_student_Student")
+  hostelapplication_student_set HostelApplication[] @relation("HostelApplication_student_Student")
+  roomallocation_student_set RoomAllocation[] @relation("RoomAllocation_student_Student")
+  messbill_student_set MessBill[] @relation("MessBill_student_Student")
+  hostelvisitor_student_set HostelVisitor[] @relation("HostelVisitor_student_Student")
+  hostelleave_student_set HostelLeave[] @relation("HostelLeave_student_Student")
+  assignmentsubmission_student_set AssignmentSubmission[] @relation("AssignmentSubmission_student_Student")
+  quizattempt_student_set QuizAttempt[] @relation("QuizAttempt_student_Student")
+  placementapplication_student_set PlacementApplication[] @relation("PlacementApplication_student_Student")
+  studentattendance_student_set StudentAttendance[] @relation("StudentAttendance_student_Student")
+  studentguardian_student_set StudentGuardian[] @relation("StudentGuardian_student_Student")
+  studentenrollment_student_set StudentEnrollment[] @relation("StudentEnrollment_student_Student")
+  @@map("students_student")
+}
+
+model StudentEnrollment {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("StudentEnrollment_student_Student", fields: [student_id], references: [id])
+  offering_id BigInt
+  offering CourseOffering @relation("StudentEnrollment_offering_CourseOffering", fields: [offering_id], references: [id])
+  enrolled_on DateTime
+  status String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  studentcourseresult_enrollment_set StudentCourseResult[] @relation("StudentCourseResult_enrollment_StudentEnrollment")
+  @@map("students_studentenrollment")
+}
+
+model StudentGuardian {
+  id BigInt @id @default(autoincrement())
+  student_id BigInt
+  student Student @relation("StudentGuardian_student_Student", fields: [student_id], references: [id])
+  guardian_id BigInt
+  guardian Guardian @relation("StudentGuardian_guardian_Guardian", fields: [guardian_id], references: [id])
+  is_primary Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("students_studentguardian")
+}
+
+model Room {
+  id BigInt @id @default(autoincrement())
+  campus_id BigInt
+  campus Campus @relation("Room_campus_Campus", fields: [campus_id], references: [id])
+  building String @default("")
+  floor Int?
+  room_no String
+  room_type String
+  capacity Int @default(0)
+  has_projector Boolean @default(false)
+  has_ac Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  courseoffering_room_set CourseOffering[] @relation("CourseOffering_room_Room")
+  examschedule_room_set ExamSchedule[] @relation("ExamSchedule_room_Room")
+  attendancesession_room_set AttendanceSession[] @relation("AttendanceSession_room_Room")
+  timetableentry_room_set TimetableEntry[] @relation("TimetableEntry_room_Room")
+  @@unique([building, room_no])
+  @@map("timetable_room")
+}
+
+model TimeSlot {
+  id BigInt @id @default(autoincrement())
+  day_of_week Int
+  start_time DateTime
+  end_time DateTime
+  name String @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  timetableentry_time_slot_set TimetableEntry[] @relation("TimetableEntry_time_slot_TimeSlot")
+  @@unique([day_of_week, start_time, end_time])
+  @@map("timetable_timeslot")
+}
+
+model TimetableEntry {
+  id BigInt @id @default(autoincrement())
+  section_id BigInt
+  section Section @relation("TimetableEntry_section_Section", fields: [section_id], references: [id])
+  offering_id BigInt
+  offering CourseOffering @relation("TimetableEntry_offering_CourseOffering", fields: [offering_id], references: [id])
+  time_slot_id BigInt
+  time_slot TimeSlot @relation("TimetableEntry_time_slot_TimeSlot", fields: [time_slot_id], references: [id])
+  teacher_id BigInt
+  teacher Employee @relation("TimetableEntry_teacher_Employee", fields: [teacher_id], references: [id])
+  room_id BigInt
+  room Room @relation("TimetableEntry_room_Room", fields: [room_id], references: [id])
+  effective_from DateTime
+  effective_to DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active Boolean @default(true)
+  @@map("timetable_timetableentry")
+}
