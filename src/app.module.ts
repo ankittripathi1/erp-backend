@@ -8,6 +8,7 @@ import { BigIntSerializerInterceptor } from "./common/interceptors/bigint-serial
 import { AuthModule } from "./modules/auth/auth.module";
 import { InstitutesModule } from './modules/organization/institutes/institutes.module';
 import { PrsimaModule } from "./prisma/prisma.module";
+import { CampusesModule } from './modules/organization/campuses/campuses.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PrsimaModule } from "./prisma/prisma.module";
     RolesModule,
     AuthModule,
     InstitutesModule,
+    CampusesModule,
   ],
   controllers: [AppController],
   providers: [
