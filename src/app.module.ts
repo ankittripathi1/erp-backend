@@ -6,9 +6,15 @@ import { UserModule } from "./modules/users/users.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { BigIntSerializerInterceptor } from "./common/interceptors/bigint-serializer.interceptor";
+import { AuthModule } from "./modules/auth/auth.module";
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), UserModule, RolesModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    UserModule,
+    RolesModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [
     PrismaService,

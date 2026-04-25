@@ -11,7 +11,10 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "baseUrl": "./",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "strict": true,
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0"
