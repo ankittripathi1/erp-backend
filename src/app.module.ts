@@ -9,6 +9,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { InstitutesModule } from './modules/organization/institutes/institutes.module';
 import { PrsimaModule } from "./prisma/prisma.module";
 import { CampusesModule } from './modules/organization/campuses/campuses.module';
+import { SchoolsModule } from './modules/organization/schools/schools.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CampusesModule } from './modules/organization/campuses/campuses.module'
     AuthModule,
     InstitutesModule,
     CampusesModule,
+    SchoolsModule,
   ],
   controllers: [AppController],
   providers: [
