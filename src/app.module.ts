@@ -11,6 +11,7 @@ import { PrsimaModule } from "./prisma/prisma.module";
 import { CampusesModule } from './modules/organization/campuses/campuses.module';
 import { SchoolsModule } from './modules/organization/schools/schools.module';
 import { DepartmentsModule } from './modules/organization/departments/departments.module';
+import { AcademicYearsModule } from './modules/academic/academic-years/academic-years.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DepartmentsModule } from './modules/organization/departments/department
     CampusesModule,
     SchoolsModule,
     DepartmentsModule,
+    AcademicYearsModule,
   ],
   controllers: [AppController],
   providers: [
