@@ -12,6 +12,10 @@ import { CampusesModule } from './modules/organization/campuses/campuses.module'
 import { SchoolsModule } from './modules/organization/schools/schools.module';
 import { DepartmentsModule } from './modules/organization/departments/departments.module';
 import { AcademicYearsModule } from './modules/academic/academic-years/academic-years.module';
+import { AcademicTermsModule } from './modules/academic/academic-terms/academic-terms.module';
+import { ProgramsModule } from './modules/academic/programs/programs.module';
+import { BatchesModule } from './modules/academic/batches/batches.module';
+import { SectionsModule } from './modules/academic/sections/sections.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { AcademicYearsModule } from './modules/academic/academic-years/academic-
     SchoolsModule,
     DepartmentsModule,
     AcademicYearsModule,
+    AcademicTermsModule,
+    ProgramsModule,
+    BatchesModule,
+    SectionsModule,
   ],
   controllers: [AppController],
   providers: [
