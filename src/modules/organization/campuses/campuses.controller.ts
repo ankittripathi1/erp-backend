@@ -1,9 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CampusesService } from './campuses.service';
-import { CreateCampusDto } from './dto/create-campus.dto';
-import { UpdateCampusDto } from './dto/update-campus.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
+import { CampusesService } from "./campuses.service";
+import { CreateCampusDto } from "./dto/create-campus.dto";
+import { UpdateCampusDto } from "./dto/update-campus.dto";
+import { RolesGuard } from "src/common/guards/roles.guard";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { Roles } from "src/common/decorators/roles.decorator";
+import { AppRole } from "src/common/constants/role.constants";
 
-@Controller('campuses')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(AppRole.SUPER_ADMIN, AppRole.ADMIN)
+@Controller("campuses")
 export class CampusesController {
   constructor(private readonly campusesService: CampusesService) {}
 
@@ -17,18 +32,18 @@ export class CampusesController {
     return this.campusesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.campusesService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCampusDto: UpdateCampusDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateCampusDto: UpdateCampusDto) {
     return this.campusesService.update(+id, updateCampusDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.campusesService.remove(+id);
   }
 }

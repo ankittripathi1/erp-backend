@@ -1,9 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { SectionsService } from './sections.service';
-import { CreateSectionDto } from './dto/create-section.dto';
-import { UpdateSectionDto } from './dto/update-section.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
+import { SectionsService } from "./sections.service";
+import { CreateSectionDto } from "./dto/create-section.dto";
+import { UpdateSectionDto } from "./dto/update-section.dto";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { RolesGuard } from "src/common/guards/roles.guard";
+import { Roles } from "src/common/decorators/roles.decorator";
+import { AppRole } from "src/common/constants/role.constants";
 
-@Controller('sections')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(AppRole.SUPER_ADMIN, AppRole.ADMIN)
+@Controller("sections")
 export class SectionsController {
   constructor(private readonly sectionsService: SectionsService) {}
 
@@ -17,18 +32,18 @@ export class SectionsController {
     return this.sectionsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.sectionsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSectionDto: UpdateSectionDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateSectionDto: UpdateSectionDto) {
     return this.sectionsService.update(+id, updateSectionDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.sectionsService.remove(+id);
   }
 }

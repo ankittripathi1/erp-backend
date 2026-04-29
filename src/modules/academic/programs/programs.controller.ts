@@ -1,9 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ProgramsService } from './programs.service';
-import { CreateProgramDto } from './dto/create-program.dto';
-import { UpdateProgramDto } from './dto/update-program.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
+import { ProgramsService } from "./programs.service";
+import { CreateProgramDto } from "./dto/create-program.dto";
+import { UpdateProgramDto } from "./dto/update-program.dto";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { RolesGuard } from "src/common/guards/roles.guard";
+import { Roles } from "src/common/decorators/roles.decorator";
+import { AppRole } from "src/common/constants/role.constants";
 
-@Controller('programs')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(AppRole.SUPER_ADMIN, AppRole.ADMIN)
+@Controller("programs")
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
 
@@ -17,18 +32,18 @@ export class ProgramsController {
     return this.programsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.programsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProgramDto: UpdateProgramDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateProgramDto: UpdateProgramDto) {
     return this.programsService.update(+id, updateProgramDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.programsService.remove(+id);
   }
 }

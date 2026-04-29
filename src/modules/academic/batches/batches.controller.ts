@@ -1,9 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { BatchesService } from './batches.service';
-import { CreateBatchDto } from './dto/create-batch.dto';
-import { UpdateBatchDto } from './dto/update-batch.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
+import { BatchesService } from "./batches.service";
+import { CreateBatchDto } from "./dto/create-batch.dto";
+import { UpdateBatchDto } from "./dto/update-batch.dto";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { RolesGuard } from "src/common/guards/roles.guard";
+import { Roles } from "src/common/decorators/roles.decorator";
+import { AppRole } from "src/common/constants/role.constants";
 
-@Controller('batches')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(AppRole.SUPER_ADMIN, AppRole.ADMIN)
+@Controller("batches")
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
@@ -17,18 +32,18 @@ export class BatchesController {
     return this.batchesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.batchesService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBatchDto: UpdateBatchDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateBatchDto: UpdateBatchDto) {
     return this.batchesService.update(+id, updateBatchDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.batchesService.remove(+id);
   }
 }
