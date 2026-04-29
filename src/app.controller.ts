@@ -2,12 +2,11 @@ import { Controller, Get } from "@nestjs/common";
 
 @Controller()
 export class AppController {
-  @Get("health")
-  health() {
+  @Get()
+  index() {
     return {
-      status: "ok",
       service: "ums-backend",
-      timestamp: new Date().toISOString(),
+      status: "running",
     };
   }
 }
