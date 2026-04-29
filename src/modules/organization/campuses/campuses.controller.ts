@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from "@nestjs/common";
 import { CampusesService } from "./campuses.service";
 import { CreateCampusDto } from "./dto/create-campus.dto";
@@ -16,6 +17,7 @@ import { RolesGuard } from "src/common/guards/roles.guard";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { Roles } from "src/common/decorators/roles.decorator";
 import { AppRole } from "src/common/constants/role.constants";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(AppRole.SUPER_ADMIN, AppRole.ADMIN)
@@ -29,8 +31,8 @@ export class CampusesController {
   }
 
   @Get()
-  findAll() {
-    return this.campusesService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.campusesService.findAll(query);
   }
 
   @Get(":id")
