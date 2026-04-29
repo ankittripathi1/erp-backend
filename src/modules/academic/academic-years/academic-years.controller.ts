@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { AcademicYearsService } from "./academic-years.service";
 import { CreateAcademicYearDto } from "./dto/create-academic-year.dto";
@@ -33,20 +34,20 @@ export class AcademicYearsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.academicYearsService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.academicYearsService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateAcademicYearDto: UpdateAcademicYearDto,
   ) {
-    return this.academicYearsService.update(+id, updateAcademicYearDto);
+    return this.academicYearsService.update(id, updateAcademicYearDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.academicYearsService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.academicYearsService.remove(id);
   }
 }

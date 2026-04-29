@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { DepartmentsService } from "./departments.service";
 import { CreateDepartmentDto } from "./dto/create-department.dto";
@@ -33,20 +34,20 @@ export class DepartmentsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.departmentsService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.departmentsService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateDepartmentDto: UpdateDepartmentDto,
   ) {
-    return this.departmentsService.update(+id, updateDepartmentDto);
+    return this.departmentsService.update(id, updateDepartmentDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.departmentsService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.departmentsService.remove(id);
   }
 }

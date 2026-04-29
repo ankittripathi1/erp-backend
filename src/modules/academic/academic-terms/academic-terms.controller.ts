@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { AcademicTermsService } from "./academic-terms.service";
 import { CreateAcademicTermDto } from "./dto/create-academic-term.dto";
@@ -33,20 +34,20 @@ export class AcademicTermsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.academicTermsService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.academicTermsService.findOne(id);
   }
 
   @Patch(":id")
   update(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateAcademicTermDto: UpdateAcademicTermDto,
   ) {
-    return this.academicTermsService.update(+id, updateAcademicTermDto);
+    return this.academicTermsService.update(id, updateAcademicTermDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.academicTermsService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.academicTermsService.remove(id);
   }
 }

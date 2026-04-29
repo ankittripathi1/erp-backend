@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { CampusesService } from "./campuses.service";
 import { CreateCampusDto } from "./dto/create-campus.dto";
@@ -33,17 +34,20 @@ export class CampusesController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.campusesService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.campusesService.findOne(id);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateCampusDto: UpdateCampusDto) {
-    return this.campusesService.update(+id, updateCampusDto);
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateCampusDto: UpdateCampusDto,
+  ) {
+    return this.campusesService.update(id, updateCampusDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.campusesService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.campusesService.remove(id);
   }
 }

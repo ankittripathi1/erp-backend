@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { ProgramsService } from "./programs.service";
 import { CreateProgramDto } from "./dto/create-program.dto";
@@ -33,17 +34,20 @@ export class ProgramsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.programsService.findOne(+id);
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.programsService.findOne(id);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateProgramDto: UpdateProgramDto) {
-    return this.programsService.update(+id, updateProgramDto);
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateProgramDto: UpdateProgramDto,
+  ) {
+    return this.programsService.update(id, updateProgramDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.programsService.remove(+id);
+  remove(@Param("id", ParseIntPipe) id: number) {
+    return this.programsService.remove(id);
   }
 }
