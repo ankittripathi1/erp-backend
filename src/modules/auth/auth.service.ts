@@ -38,7 +38,7 @@ export class AuthService {
     });
 
     if (!user || !user.is_active || user.account_status !== "active") {
-      throw new UnauthorizedException("Invalid Creadentials");
+      throw new UnauthorizedException("Invalid Credentials");
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);

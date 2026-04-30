@@ -17,13 +17,14 @@ const roles = [
   { code: "SUPER_ADMIN", name: "Super Admin" },
   { code: "ADMIN", name: "Admin" },
   { code: "STUDENT", name: "Student" },
-  { code: "TEACHER", name: "Teacher" },
-  { code: "HR_MANAGER", name: "HR manager" },
+  { code: "FACULTY", name: "faculty" },
+  { code: "HR", name: "HR" },
   { code: "ACCOUNTANT", name: "Accountant" },
   { code: "LIBRARIAN", name: "Librarian" },
   { code: "WARDEN", name: "Warden" },
   { code: "PLACEMENT_COORDINATOR", name: "Placement Coordinator" },
   { code: "ALUMNI_COORDINATOR", name: "Alumni Coordinator" },
+  { code: "STAFF", name: "staff" },
 ];
 
 async function main() {
