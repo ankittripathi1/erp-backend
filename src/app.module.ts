@@ -27,6 +27,8 @@ import { WorkExperiencesModule } from "./modules/employees/work-experiences/work
 import { ApplicationsModule } from "./modules/students/applications/applications.module";
 import { GuardiansModule } from "./modules/students/guardians/guardians.module";
 import { StudentsModule } from "./modules/students/students/students.module";
+import { StudentEnrollmentsModule } from './modules/students/student-enrollments/student-enrollments.module';
+import { StudentGuardiansModule } from './modules/students/student-guardians/student-guardians.module';
 
 @Module({
   imports: [
@@ -56,6 +58,8 @@ import { StudentsModule } from "./modules/students/students/students.module";
     ApplicationsModule,
     GuardiansModule,
     StudentsModule,
+    StudentEnrollmentsModule,
+    StudentGuardiansModule,
   ],
   controllers: [AppController],
   providers: [
