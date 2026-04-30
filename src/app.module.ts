@@ -22,6 +22,8 @@ import { PrismaExceptionFilter } from "./common/filters/prisma-exception/prisma-
 import { CoursesModule } from './modules/courses/courses.module';
 import { DesignationsModule } from "./modules/employees/designations/designations.module";
 import { EmployeesModule } from "./modules/employees/employees/employees.module";
+import { QualificationsModule } from "./modules/employees/qualifications/qualifications.module";
+import { WorkExperiencesModule } from "./modules/employees/work-experiences/work-experiences.module";
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { EmployeesModule } from "./modules/employees/employees/employees.module"
     CoursesModule,
     DesignationsModule,
     EmployeesModule,
+    QualificationsModule,
+    WorkExperiencesModule,
   ],
   controllers: [AppController],
   providers: [
