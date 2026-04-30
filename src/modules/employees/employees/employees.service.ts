@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 import {
@@ -5,12 +6,71 @@ import {
   getPagination,
 } from "src/common/utils/pagination.util";
 import { PrismaService } from "src/prisma/prisma.service";
+import { AuthUser } from "src/common/types/auth-user.type";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
+import { OnboardEmployeeDto } from "./dto/onboard-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
 
 @Injectable()
 export class EmployeesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async onboard(dto: OnboardEmployeeDto, actor: AuthUser) {
+    const role = await this.prisma.role.findUnique({
+      where: { code: dto.role_code },
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role ${dto.role_code} not found`);
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+    const assignedById = actor?.id ? BigInt(actor.id) : null;
+
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          username: dto.username,
+          password: passwordHash,
+          email: dto.email,
+          first_name: dto.first_name,
+          middle_name: dto.middle_name ?? "",
+          last_name: dto.last_name,
+          phone: dto.phone ?? "",
+          user_type: "employee",
+          account_status: "active",
+        },
+      });
+
+      await tx.userRole.create({
+        data: {
+          user_id: user.id,
+          role_id: role.id,
+          assigned_at: new Date(),
+          assigned_by_id: assignedById ?? undefined,
+          is_active: true,
+        },
+      });
+
+      return tx.employee.create({
+        data: {
+          user_id: user.id,
+          employee_no: dto.employee_no,
+          department_id: dto.department_id
+            ? BigInt(dto.department_id)
+            : undefined,
+          designation_id: BigInt(dto.designation_id),
+          reports_to_id: dto.reports_to_id
+            ? BigInt(dto.reports_to_id)
+            : undefined,
+          employment_type: dto.employment_type,
+          joining_date: new Date(dto.joining_date),
+          status: dto.status,
+        },
+        include: this.includeRelations(),
+      });
+    });
+  }
 
   create(dto: CreateEmployeeDto) {
     return this.prisma.employee.create({
