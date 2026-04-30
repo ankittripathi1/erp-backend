@@ -1,0 +1,136 @@
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
+import {
+  createPaginationResponse,
+  getPagination,
+} from "src/common/utils/pagination.util";
+import { PrismaService } from "src/prisma/prisma.service";
+import { CreateEmployeeDto } from "./dto/create-employee.dto";
+import { UpdateEmployeeDto } from "./dto/update-employee.dto";
+
+@Injectable()
+export class EmployeesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  create(dto: CreateEmployeeDto) {
+    return this.prisma.employee.create({
+      data: {
+        user_id: BigInt(dto.user_id),
+        employee_no: dto.employee_no,
+        department_id: dto.department_id
+          ? BigInt(dto.department_id)
+          : undefined,
+        designation_id: BigInt(dto.designation_id),
+        reports_to_id: dto.reports_to_id
+          ? BigInt(dto.reports_to_id)
+          : undefined,
+        employment_type: dto.employment_type,
+        joining_date: new Date(dto.joining_date),
+        confirmation_date: dto.confirmation_date
+          ? new Date(dto.confirmation_date)
+          : undefined,
+        exit_date: dto.exit_date ? new Date(dto.exit_date) : undefined,
+        status: dto.status,
+        pan_no: dto.pan_no ?? "",
+        aadhaar_no: dto.aadhaar_no ?? "",
+        pf_no: dto.pf_no ?? "",
+        uan_no: dto.uan_no ?? "",
+        bank_account_no: dto.bank_account_no ?? "",
+        bank_ifsc: dto.bank_ifsc ?? "",
+      },
+      include: this.includeRelations(),
+    });
+  }
+
+  async findAll(query: PaginationQueryDto) {
+    const { page, limit, skip, take } = getPagination(query);
+    const where = {
+      is_active: true,
+      ...(query.search
+        ? {
+            OR: [
+              {
+                employee_no: {
+                  contains: query.search,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                employment_type: {
+                  contains: query.search,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                status: {
+                  contains: query.search,
+                  mode: "insensitive" as const,
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.employee.findMany({
+        where,
+        skip,
+        take,
+        include: this.includeRelations(),
+        orderBy: { id: "desc" },
+      }),
+      this.prisma.employee.count({ where }),
+    ]);
+
+    return createPaginationResponse(data, total, page, limit);
+  }
+
+  async findOne(id: number) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: BigInt(id) },
+      include: this.includeRelations(),
+    });
+
+    if (!employee) {
+      throw new NotFoundException("Employee not found");
+    }
+
+    return employee;
+  }
+
+  update(id: number, dto: UpdateEmployeeDto) {
+    const data: any = { ...dto };
+
+    if (dto.user_id) data.user_id = BigInt(dto.user_id);
+    if (dto.department_id) data.department_id = BigInt(dto.department_id);
+    if (dto.designation_id) data.designation_id = BigInt(dto.designation_id);
+    if (dto.reports_to_id) data.reports_to_id = BigInt(dto.reports_to_id);
+    if (dto.joining_date) data.joining_date = new Date(dto.joining_date);
+    if (dto.confirmation_date)
+      data.confirmation_date = new Date(dto.confirmation_date);
+    if (dto.exit_date) data.exit_date = new Date(dto.exit_date);
+
+    return this.prisma.employee.update({
+      where: { id: BigInt(id) },
+      data,
+      include: this.includeRelations(),
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.employee.update({
+      where: { id: BigInt(id) },
+      data: { is_active: false },
+    });
+  }
+
+  private includeRelations() {
+    return {
+      user: true,
+      department: true,
+      designation: true,
+      reports_to: true,
+    };
+  }
+}

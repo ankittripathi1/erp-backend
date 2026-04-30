@@ -20,6 +20,8 @@ import { validateEnv } from "./config/env.validation";
 import { HealthModule } from "./modules/health/health.module";
 import { PrismaExceptionFilter } from "./common/filters/prisma-exception/prisma-exception.filter";
 import { CoursesModule } from './modules/courses/courses.module';
+import { DesignationsModule } from "./modules/employees/designations/designations.module";
+import { EmployeesModule } from "./modules/employees/employees/employees.module";
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { CoursesModule } from './modules/courses/courses.module';
     SectionsModule,
     HealthModule,
     CoursesModule,
+    DesignationsModule,
+    EmployeesModule,
   ],
   controllers: [AppController],
   providers: [
