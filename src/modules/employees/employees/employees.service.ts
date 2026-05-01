@@ -10,6 +10,7 @@ import { AuthUser } from "src/common/types/auth-user.type";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { OnboardEmployeeDto } from "./dto/onboard-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
+import { contains } from "class-validator";
 
 @Injectable()
 export class EmployeesService {
@@ -125,6 +126,36 @@ export class EmployeesService {
                 status: {
                   contains: query.search,
                   mode: "insensitive" as const,
+                },
+              },
+              {
+                user: {
+                  OR: [
+                    {
+                      first_name: {
+                        contains: query.search,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                    {
+                      last_name: {
+                        contains: query.search,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                    {
+                      username: {
+                        contains: query.search,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                    {
+                      email: {
+                        contains: query.search,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                  ],
                 },
               },
             ],
